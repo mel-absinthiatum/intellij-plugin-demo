@@ -4,7 +4,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
-import messageView.DummyMessageViewProvider
+import toolWindow.tree.DemoTreeModelProvider
+import toolWindow.tree.TreeNodeContent
 import javax.swing.BorderFactory.createEmptyBorder
 import javax.swing.BoxLayout
 import javax.swing.ImageIcon
@@ -12,11 +13,8 @@ import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
-import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeCellRenderer
 import javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION
-import toolWindow.tree.TreeNodeContent
-import toolWindow.tree.DemoTreeModelProvider
 
 
 class DemoToolWindow (val project: Project, val toolWindow: ToolWindow) {
@@ -48,8 +46,8 @@ class DemoToolWindow (val project: Project, val toolWindow: ToolWindow) {
 
             addTreeSelectionListener { event ->
                 val source = event.source as JTree
-                val node = source.lastSelectedPathComponent as DefaultMutableTreeNode
-                val obj = node.userObject as TreeNodeContent?
+                val node = source.lastSelectedPathComponent as DefaultMutableTreeNode?
+                val obj = node?.userObject as TreeNodeContent?
                 obj?.action?.invoke()
             }
         }

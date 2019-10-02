@@ -1,12 +1,19 @@
 package toolWindow.tree
 
+import com.intellij.icons.AllIcons
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.wm.ToolWindow
 import dialog.DemoDialog
 import dialog.DemoDialogWrapper
 import messageView.DummyMessageViewProvider
-import javax.swing.tree.*
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.MutableTreeNode
+import javax.swing.tree.TreeModel
 
 
 class DemoTreeModelProvider(val toolWindow: ToolWindow, val project: Project) {
@@ -24,12 +31,13 @@ class DemoTreeModelProvider(val toolWindow: ToolWindow, val project: Project) {
         popupCatalog.add(makePopupNode())
 
         val notificationsCatalog = DefaultMutableTreeNode(TreeNodeContentImpl("Notifications"))
+        notificationsCatalog.add(makePlainNotification())
+        notificationsCatalog.add(makeLinkNotification())
 
 
         rootNode.add(dialogCatalog)
         rootNode.add(popupCatalog)
-        // TODO: Implement notifications displaying
-//        rootNode.add(notificationsCatalog)
+        rootNode.add(notificationsCatalog)
 
 
         return DefaultTreeModel(rootNode)
@@ -64,6 +72,36 @@ class DemoTreeModelProvider(val toolWindow: ToolWindow, val project: Project) {
                     toolWindow.hide(null)
                 }, 0)
             popup.showInCenterOf(toolWindow.component)
+        })
+    }
+
+    private fun makePlainNotification(): MutableTreeNode {
+        return DefaultMutableTreeNode(TreeNodeContentImpl("Plain notification") {
+            val notification = Notification("Demo plain notification", "Plain notification",
+                "Here we are!<br><br><i>Unbelievable</i>", NotificationType.WARNING)
+            Notifications.Bus.notify(notification, project)
+        })
+    }
+
+    private fun makeLinkNotification(): MutableTreeNode {
+        return DefaultMutableTreeNode(TreeNodeContentImpl("Link notification") {
+            val notification = Notification(
+                "Demo plain notification",
+                AllIcons.Actions.Commit,
+                "Link notification",
+                "and its subtitle",
+                "<a href=\"https://www.youtube.com/user/gordonramsay?hl=ru\">Here we are!</a>",
+                NotificationType.INFORMATION) { n, event ->
+                val url = event.url
+                val eventType = event.eventType
+
+                com.intellij.ide.BrowserUtil.browse(url)
+
+                val notification = Notification("Demo plain notification", "Plain notification",
+                    "$url <i>$eventType</i>", NotificationType.INFORMATION)
+                Notifications.Bus.notify(notification, project)
+            }
+            Notifications.Bus.notify(notification, project)
         })
     }
 }
