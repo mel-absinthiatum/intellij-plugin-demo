@@ -1,0 +1,28 @@
+<idea-plugin>
+    <id>absinthium.mel.Plugin_2</id>
+    <name>Demo</name>
+    <vendor email="mel.absinthiatum@gmail.com">MelAbsinthiatum</vendor>
+
+    <description>This IntelliJ IDEA plugin is intended for demonstrations of several plugin abilities and elements.</description>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+
+    <depends>com.intellij.modules.lang</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Date-time" secondary="true" icon="/toolWindowResources/plus.svg" anchor="right"
+                    factoryClass="toolWindow.DateTimeToolWindowFactory"/>
+        <toolWindow id="Elements Demo" secondary="true" icon="/toolWindowResources/plus.svg" anchor="left"
+                    factoryClass="toolWindow.DemoToolWindowFactory"/>
+    </extensions>
+
+    <actions>
+        <group id="MyPlugin.SampleMenu" text="Greeting" description="Greeting menu">
+            <add-to-group group-id="MainMenu" anchor="last"/>
+            <action id="Myplugin.Textboxes" class="HelloAction" text="Hello" description="Says hello"/>
+        </group>
+    </actions>
+
+
+</idea-plugin>
