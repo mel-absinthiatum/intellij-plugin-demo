@@ -4,11 +4,14 @@ import com.intellij.icons.AllIcons
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
+import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.wm.ToolWindow
 import dialog.DemoDialog
 import dialog.DemoDialogWrapper
+import dialog.fileBrowseWindow.FileBrowseDialog
 import messageView.DummyMessageViewProvider
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
@@ -32,6 +35,10 @@ class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val proj
             makeCatalogNode("Notifications").including(
                 makePlainNotification(),
                 makeLinkNotification()
+            ),
+            makeCatalogNode("Files/Classes chooser").including(
+                makeFileChooserNode(),
+                makeFileChooserByTitleNode()
             )
         )
 
@@ -116,6 +123,25 @@ class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val proj
                 Notifications.Bus.notify(notification, project)
             }
             Notifications.Bus.notify(notification, project)
+        })
+    }
+
+    private fun makeFileChooserNode(): MutableTreeNode {
+        return DefaultMutableTreeNode(TreeNodeContentImpl("File chooser") {
+            val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
+            FileChooser.chooseFile(descriptor, project, null) { vf ->
+                val notification = Notification(
+                    "File selection notification", "Selected",
+                    "<i>${vf.name}</i><br>with path: <i>${vf.path}</i>", NotificationType.INFORMATION
+                )
+                Notifications.Bus.notify(notification, project)
+            }
+        })
+    }
+
+    private fun makeFileChooserByTitleNode(): MutableTreeNode {
+        return DefaultMutableTreeNode(TreeNodeContentImpl("File chooser with text field") {
+            FileBrowseDialog.showStartupDialog(project)
         })
     }
 }
