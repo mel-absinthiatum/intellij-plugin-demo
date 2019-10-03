@@ -16,32 +16,41 @@ import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeModel
 
 
-class DemoTreeModelProvider(val toolWindow: ToolWindow, val project: Project) {
+class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val project: Project) {
 
     fun createToolWindowTreeModel(): TreeModel {
 
-        val rootNode = DefaultMutableTreeNode(TreeNodeContentImpl("UI Demonstrations"))
-
-        val dialogCatalog = DefaultMutableTreeNode(TreeNodeContentImpl("Dialogs"))
-        dialogCatalog.add(makeDialogWithWrapperNode())
-        dialogCatalog.add(makeMessagesDialodNode())
-        dialogCatalog.add(makeRawDialogNode())
-
-        val popupCatalog = DefaultMutableTreeNode(TreeNodeContentImpl("Popups"))
-        popupCatalog.add(makePopupNode())
-
-        val notificationsCatalog = DefaultMutableTreeNode(TreeNodeContentImpl("Notifications"))
-        notificationsCatalog.add(makePlainNotification())
-        notificationsCatalog.add(makeLinkNotification())
-
-
-        rootNode.add(dialogCatalog)
-        rootNode.add(popupCatalog)
-        rootNode.add(notificationsCatalog)
-
+        val rootNode = makeCatalogNode("UI Demonstrations").including(
+            makeCatalogNode("Popups").including(
+                makePopupNode()
+            ),
+            makeCatalogNode("Dialogs").including(
+                makeRawDialogNode(),
+                makeDialogWithWrapperNode(),
+                makeMessagesDialogNode()
+            ),
+            makeCatalogNode("Notifications").including(
+                makePlainNotification(),
+                makeLinkNotification()
+            )
+        )
 
         return DefaultTreeModel(rootNode)
     }
+
+
+    private fun MutableTreeNode.including(vararg nodes: MutableTreeNode): MutableTreeNode {
+        nodes.reversed().forEach {
+            this.insert(it, 0)
+        }
+        return this
+    }
+
+
+    private fun makeCatalogNode(title: String): MutableTreeNode {
+        return DefaultMutableTreeNode(TreeNodeContentImpl(title))
+    }
+
 
     private fun makeDialogWithWrapperNode(): MutableTreeNode {
         return DefaultMutableTreeNode(TreeNodeContentImpl("Dialog with wrapper") {
@@ -59,7 +68,7 @@ class DemoTreeModelProvider(val toolWindow: ToolWindow, val project: Project) {
         })
     }
 
-    private fun makeMessagesDialodNode(): MutableTreeNode {
+    private fun makeMessagesDialogNode(): MutableTreeNode {
         return DefaultMutableTreeNode(TreeNodeContentImpl("Messages Dialog") {
             DummyMessageViewProvider().showDummyMessage(project)
         })
@@ -77,8 +86,10 @@ class DemoTreeModelProvider(val toolWindow: ToolWindow, val project: Project) {
 
     private fun makePlainNotification(): MutableTreeNode {
         return DefaultMutableTreeNode(TreeNodeContentImpl("Plain notification") {
-            val notification = Notification("Demo plain notification", "Plain notification",
-                "Here we are!<br><br><i>Unbelievable</i>", NotificationType.WARNING)
+            val notification = Notification(
+                "Demo plain notification", "Plain notification",
+                "Here we are!<br><br><i>Unbelievable</i>", NotificationType.WARNING
+            )
             Notifications.Bus.notify(notification, project)
         })
     }
@@ -91,14 +102,17 @@ class DemoTreeModelProvider(val toolWindow: ToolWindow, val project: Project) {
                 "Link notification",
                 "and its subtitle",
                 "<a href=\"https://www.youtube.com/user/gordonramsay?hl=ru\">Here we are!</a>",
-                NotificationType.INFORMATION) { n, event ->
+                NotificationType.INFORMATION
+            ) { _, event ->
                 val url = event.url
                 val eventType = event.eventType
 
                 com.intellij.ide.BrowserUtil.browse(url)
 
-                val notification = Notification("Demo plain notification", "Plain notification",
-                    "$url <i>$eventType</i>", NotificationType.INFORMATION)
+                val notification = Notification(
+                    "Demo plain notification", "Plain notification",
+                    "$url <i>$eventType</i>", NotificationType.INFORMATION
+                )
                 Notifications.Bus.notify(notification, project)
             }
             Notifications.Bus.notify(notification, project)
