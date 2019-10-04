@@ -7,17 +7,20 @@ import com.intellij.ui.treeStructure.Tree
 import javax.swing.JTree
 
 class FileSystemTreeProvider {
-    fun createFileSystemTree(project: Project): JTree {
-        val defaultTree = Tree()
-        val fileChooserDescriptor = FileChooserDescriptorFactory.createMultipleFoldersDescriptor()
 
-        return FileSystemTreeImpl(
-            project,
-            fileChooserDescriptor,
-            defaultTree,
-            null,
-            null,
-            null
-        ).tree
+    companion object {
+        fun createFileSystemTree(project: Project): JTree {
+            val defaultTree = Tree()
+            val fileChooserDescriptor = FileChooserDescriptorFactory.createMultipleFoldersDescriptor()
+
+            return FileSystemTreeImpl(
+                project,
+                fileChooserDescriptor,
+                defaultTree,
+                null,
+                null,
+                null
+            ).tree
+        }
     }
 }
