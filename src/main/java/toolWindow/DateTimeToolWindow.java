@@ -22,17 +22,17 @@ public class DateTimeToolWindow {
     }
 
 
-    public void currentDateTime() {
+    private void currentDateTime() {
         // Get current date and time
         Calendar instance = Calendar.getInstance();
-        currentDate.setText(String.valueOf(instance.get(Calendar.DAY_OF_MONTH)) + "/"
-                + String.valueOf(instance.get(Calendar.MONTH) + 1) + "/" +
-                String.valueOf(instance.get(Calendar.YEAR)));
+        currentDate.setText(instance.get(Calendar.DAY_OF_MONTH) + "/"
+                + (instance.get(Calendar.MONTH) + 1) + "/" +
+                instance.get(Calendar.YEAR));
         currentDate.setIcon(new ImageIcon(getClass().getResource("/toolWindowResources/Calendar-icon.png")));
         int min = instance.get(Calendar.MINUTE);
         String strMin;
         if (min < 10) {
-            strMin = "0" + String.valueOf(min);
+            strMin = "0" + min;
         } else {
             strMin = String.valueOf(min);
         }

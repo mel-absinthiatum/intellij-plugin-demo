@@ -20,9 +20,7 @@ class DummyMessageViewProvider {
         val messageOptions = arrayOf(option1, option2, option3)
         val optionTitles = messageOptions.map { it.title }
 
-        // TODO: showCheckboxOkCancelDialog
 
-//        val exitCode = Messages.showCheckboxOkCancelDialog("message", "title", "checkbox text", false, 0, 0, null)
 
         var isChecked = false
         val exitCode = Messages.showCheckboxMessageDialog(

@@ -11,7 +11,7 @@ class FileSystemTreeProvider {
         val defaultTree = Tree()
         val fileChooserDescriptor = FileChooserDescriptorFactory.createMultipleFoldersDescriptor()
 
-        val fileSystemTree = FileSystemTreeImpl(
+        return FileSystemTreeImpl(
             project,
             fileChooserDescriptor,
             defaultTree,
@@ -19,7 +19,5 @@ class FileSystemTreeProvider {
             null,
             null
         ).tree
-
-        return fileSystemTree
     }
 }

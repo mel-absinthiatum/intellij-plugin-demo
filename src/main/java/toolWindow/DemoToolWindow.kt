@@ -17,7 +17,7 @@ import javax.swing.tree.TreeCellRenderer
 import javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION
 
 
-class DemoToolWindow (val project: Project, val toolWindow: ToolWindow) {
+class DemoToolWindow (private val project: Project, private val toolWindow: ToolWindow) {
     val content: JPanel
 
     init {
