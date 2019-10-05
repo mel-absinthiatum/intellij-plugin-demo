@@ -22,6 +22,10 @@
             <add-to-group group-id="MainMenu" anchor="last"/>
             <action id="Myplugin.Textboxes" class="HelloAction" text="Hello" description="Says hello"/>
         </group>
+        <action id="actions.SimpleDemoAction" class="actions.SimpleDemoAction" text="Simple Demo Action"
+                description="Intellij action demo (tools menu)">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
     </actions>
 
 
