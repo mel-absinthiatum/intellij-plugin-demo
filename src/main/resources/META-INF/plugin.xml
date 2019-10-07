@@ -32,6 +32,17 @@
                     id="actions.SimpleGroupedAction" text="A Grouped Action" description="Grouped Action Demo">
             </action>
         </group>
+        <group id="actions.ExampleCustomDefaultActionGroup"
+               class="actions.CustomActionGroup" popup="true"
+               text="Example Custom DefaultActionGroup" description="Custom DefaultActionGroup Demo">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <action class="actions.SimpleDemoAction" id="actions.CustomGroupedAction"
+                    text="A Custom Grouped Action" description="Custom Grouped Action Demo"/>
+        </group>
+        <group id="actions.DynamicActionGroup" class="actions.DynamicActionGroup" popup="true"
+               text="Dynamic Action Group" description="Dynamic Action Group Demo">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </group>
     </actions>
 
 

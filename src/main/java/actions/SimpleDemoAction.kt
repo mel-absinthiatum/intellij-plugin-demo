@@ -5,9 +5,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.ui.Messages
 import notifications.SimpleNotificationProvider
+import javax.swing.Icon
 
 
-class SimpleDemoAction : AnAction() {
+class SimpleDemoAction(text: String = "", description: String= "", icon: Icon? = null) : AnAction(text, description, icon) {
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         SimpleNotificationProvider.notify("Simple action is completed")
 
