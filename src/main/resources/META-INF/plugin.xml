@@ -26,6 +26,12 @@
                 description="Intellij action demo (tools menu)">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
+        <group id="actions.GroupedActions" text="Grouped Demo Actions" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="actions.SimpleDemoAction"/>
+            <action class="actions.GrouppedDemoAction"
+                    id="actions.SimpleGroupedAction" text="A Grouped Action" description="Grouped Action Demo">
+            </action>
+        </group>
     </actions>
 
 
