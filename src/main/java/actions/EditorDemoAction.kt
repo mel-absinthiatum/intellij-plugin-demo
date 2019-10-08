@@ -6,12 +6,14 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 
 
 class EditorDemoAction : AnAction() {
 
     /**
      * Replaces the run of text selected by the primary caret with a fixed string.
+     * Displays the message with caret logical and visual position info.
      * @param e  Event related to this action
      */
     override fun actionPerformed(e: AnActionEvent) {
@@ -31,6 +33,19 @@ class EditorDemoAction : AnAction() {
         ) { document.replaceString(start, end, "awesome_string") }
         // De-select the text range that was just replaced
         primaryCaret.removeSelection()
+
+        // Caret position issues.
+        val caretModel = editor.caretModel
+
+
+        val logicalPosition = caretModel.logicalPosition
+        val visualPosition = caretModel.visualPosition
+        val caretOffset = caretModel.offset
+        // Build and display the caret report.
+        val report = StringBuilder(logicalPosition.toString() + "\n")
+        report.append(visualPosition.toString() + "\n")
+        report.append("Offset: $caretOffset")
+        Messages.showInfoMessage(report.toString(), "Caret Parameters Inside The Editor")
     }
 
     /**
