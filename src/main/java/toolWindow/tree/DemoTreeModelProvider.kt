@@ -6,13 +6,17 @@ import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
+import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.wm.ToolWindow
+import com.intellij.util.DocumentUtil
 import dialog.DemoDialog
 import dialog.DemoDialogWrapper
 import dialog.fileBrowseWindow.FileBrowseDialog
 import messageView.DummyMessageViewProvider
+import notifications.SimpleNotificationProvider
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
@@ -39,6 +43,10 @@ class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val proj
             makeCatalogNode("Files/Classes chooser").including(
                 makeFileChooserNode(),
                 makeFileChooserByTitleNode()
+            ),
+            makeCatalogNode("VFS and Documents").including(
+                makeVirtualFileInfoNode(),
+                openFileNode()
             )
         )
 
@@ -142,6 +150,34 @@ class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val proj
     private fun makeFileChooserByTitleNode(): MutableTreeNode {
         return DefaultMutableTreeNode(TreeNodeContentImpl("File chooser with text field") {
             FileBrowseDialog.showStartupDialog(project)
+        })
+    }
+
+    private fun makeVirtualFileInfoNode(): MutableTreeNode {
+        return DefaultMutableTreeNode(TreeNodeContentImpl("Virtual file info") {
+            val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
+            FileChooser.chooseFile(descriptor, project, null) { vf ->
+                val document = FileDocumentManager.getInstance().getDocument(vf)
+                if (document != null) {
+                    val offset = DocumentUtil.getFirstNonSpaceCharOffset(document!!, 2)
+                    val content = document.charsSequence.subSequence(0, offset)
+                    SimpleNotificationProvider.notify("Selected file",
+                        "first 2 lines contains $offset symbols:<br>" +
+                                "<b>$content</b>")
+                }
+            }
+        })
+    }
+
+    private fun openFileNode(): MutableTreeNode {
+        return DefaultMutableTreeNode(TreeNodeContentImpl("Open file") {
+
+            val chooserDescriptor = FileChooserDescriptor(true, false, true, false, false, false)
+            val virtualFile = FileChooser.chooseFile(chooserDescriptor, project, null)
+            if (virtualFile != null && virtualFile.isValid && !virtualFile.isDirectory) {
+                val fileEditorManager = FileEditorManager.getInstance(project)
+                fileEditorManager.openFile(virtualFile, true)
+            }
         })
     }
 }

@@ -53,11 +53,11 @@ class FileBrowseDialog : DialogWrapper {
 
         // TODO Unwrap optional instance
         fun showStartupDialog(project: Project) {
-            val w = WindowManagerEx.getInstanceEx().suggestParentWindow(project)
+            val window = WindowManagerEx.getInstanceEx().suggestParentWindow(project)
             if (instance != null && instance!!.isVisible) {
                 instance!!.dispose()
             }
-            instance = if (w == null) FileBrowseDialog(project) else FileBrowseDialog(project, w)
+            instance = if (window == null) FileBrowseDialog(project) else FileBrowseDialog(project, window)
             if (instance!!.showAndGet()) {
                 val notification = Notification(
                     "File selection notification",
