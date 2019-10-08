@@ -2,19 +2,25 @@ package messageView
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
+import notifications.SimpleNotificationProvider
 import javax.swing.ImageIcon
 
 
-class DummyMessageViewProvider {
-    fun showDummyMessage(project: Project) {
-        val option1 = MessageOption("Opt_1_title") { isChecked ->
-            println("Opt_1 checkbox is checked: $isChecked")
+class DummyMessageViewProvider(private val project: Project) {
+
+    // Parameter `title` is the button title on the message view.
+    private class MessageOption(val title: String, val action: (Boolean)->Unit)
+
+    private val notificationProvider = SimpleNotificationProvider(project)
+    fun showDummyMessage() {
+        val option1 = MessageOption("Opt_1") { isChecked ->
+            notificationProvider.notify("Selected Opt_1. checkbox is checked: $isChecked")
         }
-        val option2 = MessageOption("Opt_2_title") { isChecked ->
-            println("Opt_2 checkbox is checked: $isChecked")
+        val option2 = MessageOption("Opt_2") { isChecked ->
+            notificationProvider.notify("Selected Opt_2. checkbox is checked: $isChecked")
         }
-        val option3 = MessageOption("Opt_3_title") { isChecked ->
-            println("Opt_3 checkbox is checked: $isChecked")
+        val option3 = MessageOption("Opt_3") { isChecked ->
+            notificationProvider.notify("Selected Opt_3. checkbox is checked: $isChecked")
         }
 
         val messageOptions = arrayOf(option1, option2, option3)
@@ -32,17 +38,10 @@ class DummyMessageViewProvider {
         }
 
         if (exitCode == -1) {
-            println("Close the message by `X` button")
+            notificationProvider.notify("The message was closed")
         } else {
             messageOptions[exitCode].action(isChecked)
-            println("$isChecked ___ $exitCode")
         }
-        Messages.showMessageDialog(project, "HelloWorld", "Greeting", Messages.getInformationIcon())
-
-        println("EXIT $exitCode")
     }
 }
 
-
-// Parameter `title` is the button title on the message view.
-class MessageOption(val title: String, val action: (Boolean)->Unit)

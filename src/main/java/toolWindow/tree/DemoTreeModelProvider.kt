@@ -24,7 +24,7 @@ import javax.swing.tree.TreeModel
 
 
 class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val project: Project) {
-
+    private val notificationProvider = SimpleNotificationProvider(project)
     fun createToolWindowTreeModel(): TreeModel {
 
         val rootNode = makeCatalogNode("UI Demonstrations").including(
@@ -85,7 +85,7 @@ class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val proj
 
     private fun makeMessagesDialogNode(): MutableTreeNode {
         return DefaultMutableTreeNode(TreeNodeContentImpl("Messages Dialog") {
-            DummyMessageViewProvider().showDummyMessage(project)
+            DummyMessageViewProvider(project).showDummyMessage()
         })
     }
 
@@ -101,11 +101,7 @@ class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val proj
 
     private fun makePlainNotification(): MutableTreeNode {
         return DefaultMutableTreeNode(TreeNodeContentImpl("Plain notification") {
-            val notification = Notification(
-                "Demo plain notification", "Plain notification",
-                "Here we are!<br><br><i>Unbelievable</i>", NotificationType.WARNING
-            )
-            Notifications.Bus.notify(notification, project)
+            notificationProvider.notify("Plain notification", "Here we are!<br><br><i>Unbelievable</i>")
         })
     }
 
@@ -124,11 +120,7 @@ class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val proj
 
                 com.intellij.ide.BrowserUtil.browse(url)
 
-                val notification = Notification(
-                    "Demo plain notification", "Plain notification",
-                    "$url <i>$eventType</i>", NotificationType.INFORMATION
-                )
-                Notifications.Bus.notify(notification, project)
+                notificationProvider.notify("Plain notification", "$url <i>$eventType</i>")
             }
             Notifications.Bus.notify(notification, project)
         })
@@ -138,11 +130,7 @@ class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val proj
         return DefaultMutableTreeNode(TreeNodeContentImpl("File chooser") {
             val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
             FileChooser.chooseFile(descriptor, project, null) { vf ->
-                val notification = Notification(
-                    "File selection notification", "Selected",
-                    "<i>${vf.name}</i><br>with path: <i>${vf.path}</i>", NotificationType.INFORMATION
-                )
-                Notifications.Bus.notify(notification, project)
+                notificationProvider.notify("Selected", "<i>${vf.name}</i><br>with path: <i>${vf.path}</i>")
             }
         })
     }
@@ -159,9 +147,9 @@ class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val proj
             FileChooser.chooseFile(descriptor, project, null) { vf ->
                 val document = FileDocumentManager.getInstance().getDocument(vf)
                 if (document != null) {
-                    val offset = DocumentUtil.getFirstNonSpaceCharOffset(document!!, 2)
+                    val offset = DocumentUtil.getFirstNonSpaceCharOffset(document, 2)
                     val content = document.charsSequence.subSequence(0, offset)
-                    SimpleNotificationProvider.notify("Selected file",
+                    notificationProvider.notify("Selected file",
                         "first 2 lines contains $offset symbols:<br>" +
                                 "<b>$content</b>")
                 }
