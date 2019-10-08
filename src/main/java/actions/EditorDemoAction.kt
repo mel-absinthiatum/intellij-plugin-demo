@@ -12,7 +12,7 @@ import com.intellij.openapi.ui.Messages
 class EditorDemoAction : AnAction() {
 
     /**
-     * Replaces the run of text selected by the primary caret with a fixed string.
+     * Replaces the run of selected text selected by the primary caret with a fixed string.
      * Displays the message with caret logical and visual position info.
      * @param e  Event related to this action
      */
@@ -23,21 +23,24 @@ class EditorDemoAction : AnAction() {
         val project = e.getRequiredData<Project>(CommonDataKeys.PROJECT)
         val document = editor.document
         // Work off of the primary caret to get the selection info
-        val primaryCaret = editor.caretModel.primaryCaret
-        val start = primaryCaret.selectionStart
-        val end = primaryCaret.selectionEnd
+        val selectionModel = editor.selectionModel
+        val caretModel = editor.caretModel
+
         // Replace the selection with a fixed string.
         // Must do this document change in a write action context.
         WriteCommandAction.runWriteCommandAction(
             project
-        ) { document.replaceString(start, end, "awesome_string") }
+        ) {
+            caretModel.allCarets.forEach {
+                val start = it.selectionStart
+                val end = it.selectionEnd
+                document.replaceString(start, end, "awesome_string")
+            }
+        }
         // De-select the text range that was just replaced
-        primaryCaret.removeSelection()
+        selectionModel.removeSelection()
 
         // Caret position issues.
-        val caretModel = editor.caretModel
-
-
         val logicalPosition = caretModel.logicalPosition
         val visualPosition = caretModel.visualPosition
         val caretOffset = caretModel.offset

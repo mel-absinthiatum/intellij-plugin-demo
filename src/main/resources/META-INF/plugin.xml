@@ -46,7 +46,9 @@
         <action id="EditorBasics.EditorIllustrationAction"
                 class="actions.EditorDemoAction"
                 text="Editor Replace Text"
-                description="Replaces selected text with 'Replacement'.">
+                description="Replaces selected text with 'Replacement'."
+        >
+            <keyboard-shortcut first-keystroke="control alt A" second-keystroke="C" keymap="$default"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
     </actions>
