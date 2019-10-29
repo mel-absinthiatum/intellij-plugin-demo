@@ -6,21 +6,20 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiManager
+import com.intellij.psi.PsiMethod
+import com.intellij.psi.util.PsiTreeUtil
 
 
 class ProjectTreePSIListAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.getRequiredData<Project>(CommonDataKeys.PROJECT)
 
-
-        val projectName = project.name
         val rootManager = ProjectRootManager.getInstance(project)
-        val contentRootUrls = rootManager.contentRootUrls.joinToString("\n")
         val vFiles = rootManager.contentSourceRoots
 
-        val sourceRootsList = vFiles.map { it.url }.joinToString("\n")
         for (file in vFiles) {
             println("\n*** root: ${file.url}")
             VfsUtilCore.iterateChildrenRecursively(file, {
@@ -34,29 +33,30 @@ class ProjectTreePSIListAction : AnAction() {
                     val languages = fileViewProvider.languages
 
                     val kotlinTree = fileViewProvider.getPsi(kotlinLang)
-//                    PsiTreeUtil.getChildOfType()
-//                    PsiRecursiveElementWalkingVisitor
-
-//                    Messages.showInfoMessage(kotlinTree.toString(), "PSI")
+                    val method = PsiTreeUtil.getChildOfType(kotlinTree, PsiMethod::class.java)
+                    println("%%% $method")
                 }
 
                 true
             })
         }
-        //org.jetbrains.kotlin.idea.KotlinFileType
+    }
 
-    //        Messages.showInfoMessage("Source roots for the $projectName plugin:\n$sourceRootsList\n\n Content roots:\n$contentRootUrls", "Project Properties")
+    private fun showRootPathsInfo(e: AnActionEvent) {
+        val project = e.getRequiredData<Project>(CommonDataKeys.PROJECT)
 
+        val projectName = project.name
+        val rootManager = ProjectRootManager.getInstance(project)
+        val contentRootUrls = rootManager.contentRootUrls.joinToString("\n")
+        val vFiles = rootManager.contentSourceRoots
 
-    //        LocalFileSystem
+        val sourceRootsList = vFiles.map { it.url }.joinToString("\n")
 
+        val projectFilePath = project.projectFilePath
+        val projectRootPath = project.basePath
+        Messages.showInfoMessage("Source roots for the $projectName plugin:\n$sourceRootsList\n\n"
+                + "Content roots:\n$contentRootUrls\n\nProject file path$projectFilePath\n"
+                + "Project root path: $projectRootPath", "Project Properties")
 
-    //        VirtualFileManager.addVirtualFileListener()
-            //
-//        val projectFilePath = project.projectFilePath
-//        val projectRootPath = project.basePath
-//
-//
-//        SimpleNotificationProvider.notify(projectFilePath.toString(), projectRootPath.toString())
     }
 }
