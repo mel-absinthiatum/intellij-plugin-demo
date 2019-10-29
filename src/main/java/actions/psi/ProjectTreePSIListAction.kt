@@ -5,7 +5,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.psi.PsiManager
 
 
 class ProjectTreePSIListAction : AnAction() {
@@ -19,11 +20,24 @@ class ProjectTreePSIListAction : AnAction() {
         val vFiles = rootManager.contentSourceRoots
 
         val sourceRootsList = vFiles.map { it.url }.joinToString("\n")
+        for (file in vFiles) {
+            println("\n*** root: ${file.url}")
+            VfsUtilCore.iterateChildrenRecursively(file, {
+                true
+            }, {
+                println("${it.fileType.description} ___ ${it.url}")
+                val psiFile = PsiManager.getInstance(project).findFile(it)
+                true
+            })
+        }
+    //        Messages.showInfoMessage("Source roots for the $projectName plugin:\n$sourceRootsList\n\n Content roots:\n$contentRootUrls", "Project Properties")
 
 
-        Messages.showInfoMessage("Source roots for the $projectName plugin:\n$sourceRootsList\n\n Content roots:\n$contentRootUrls", "Project Properties")
+    //        LocalFileSystem
 
-//
+
+    //        VirtualFileManager.addVirtualFileListener()
+            //
 //        val projectFilePath = project.projectFilePath
 //        val projectRootPath = project.basePath
 //
