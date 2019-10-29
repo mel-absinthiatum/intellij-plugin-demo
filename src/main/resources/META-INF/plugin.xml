@@ -51,6 +51,13 @@
             <keyboard-shortcut first-keystroke="control alt A" second-keystroke="C" keymap="$default"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
+        <action id="EditorBasics.EditorPSIInfoAction"
+                class="actions.psi.EditorPSIInfoAction"
+                text="PSI info"
+                description="Show PSI info of the current file."
+        >
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
     </actions>
 
 
