@@ -58,6 +58,13 @@
         >
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
+
+        <action id="EditorBasics.ProjectTreePSIListAction"
+                class="actions.psi.ProjectTreePSIListAction"
+                text="PSI info"
+                description="Show PSI info of the root and the selected file.">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
     </actions>
 
 
