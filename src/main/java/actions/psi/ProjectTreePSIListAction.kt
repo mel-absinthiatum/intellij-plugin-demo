@@ -1,5 +1,6 @@
 package actions.psi
 
+import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -25,11 +26,25 @@ class ProjectTreePSIListAction : AnAction() {
             VfsUtilCore.iterateChildrenRecursively(file, {
                 true
             }, {
-                println("${it.fileType.description} ___ ${it.url}")
                 val psiFile = PsiManager.getInstance(project).findFile(it)
+                val kotlinLang = Language.findLanguageByID("kotlin")
+                if (psiFile != null && kotlinLang != null && psiFile.viewProvider.hasLanguage(kotlinLang)) {
+                    val fileViewProvider = psiFile.viewProvider
+                    val language = fileViewProvider.baseLanguage
+                    val languages = fileViewProvider.languages
+
+                    val kotlinTree = fileViewProvider.getPsi(kotlinLang)
+//                    PsiTreeUtil.getChildOfType()
+//                    PsiRecursiveElementWalkingVisitor
+
+//                    Messages.showInfoMessage(kotlinTree.toString(), "PSI")
+                }
+
                 true
             })
         }
+        //org.jetbrains.kotlin.idea.KotlinFileType
+
     //        Messages.showInfoMessage("Source roots for the $projectName plugin:\n$sourceRootsList\n\n Content roots:\n$contentRootUrls", "Project Properties")
 
 
