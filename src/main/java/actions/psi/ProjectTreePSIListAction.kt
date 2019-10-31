@@ -21,7 +21,7 @@ class ProjectTreePSIListAction : AnAction() {
         val vFiles = rootManager.contentSourceRoots
 
         for (file in vFiles) {
-            println("\n*** root: ${file.url}")
+            println("\nRoot: ${file.url}")
             VfsUtilCore.iterateChildrenRecursively(file, {
                 true
             }, {
@@ -34,7 +34,7 @@ class ProjectTreePSIListAction : AnAction() {
 
                     val kotlinTree = fileViewProvider.getPsi(kotlinLang)
                     val method = PsiTreeUtil.getChildOfType(kotlinTree, PsiMethod::class.java)
-                    println("%%% $method")
+                    println("Java method: $method")
                 }
 
                 true
@@ -50,7 +50,7 @@ class ProjectTreePSIListAction : AnAction() {
         val contentRootUrls = rootManager.contentRootUrls.joinToString("\n")
         val vFiles = rootManager.contentSourceRoots
 
-        val sourceRootsList = vFiles.map { it.url }.joinToString("\n")
+        val sourceRootsList = vFiles.joinToString("\n") { it.url }
 
         val projectFilePath = project.projectFilePath
         val projectRootPath = project.basePath

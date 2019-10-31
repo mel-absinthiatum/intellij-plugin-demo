@@ -62,7 +62,14 @@
         <action id="EditorBasics.ProjectTreePSIListAction"
                 class="actions.psi.ProjectTreePSIListAction"
                 text="PSI info"
-                description="Show PSI info of the root and the selected file.">
+                description="Show PSI info of the root and files tree.">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+
+        <action id="EditorBasics.KotlinPsiListAction"
+                class="actions.psi.KotlinPsiListAction"
+                text="Kotlin PSI info"
+                description="Show kotlin PSI info of the files tree.">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
     </actions>
