@@ -9,13 +9,14 @@ import com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer
+import org.jetbrains.kotlin.com.intellij.psi.PsiErrorElement
 import org.jetbrains.kotlin.com.intellij.testFramework.LightVirtualFile
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
-import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 import org.jetbrains.kotlin.com.intellij.openapi.project.Project as KProject
 import org.jetbrains.kotlin.com.intellij.psi.PsiManager as KPsiManager
-
 
 class KotlinPsiListAction : AnAction() {
 
@@ -37,15 +38,46 @@ class KotlinPsiListAction : AnAction() {
                 println("File: $psiFile")
 
                 if (text != null) {
-                    val ktFile = parsePsiFile(it.name, text)
+                    val ktFile = parse(it.name, text)
 
                     if (ktFile != null) {
-                        println("File content: $text")
+                        val importList = ktFile.importList
+                        val classes = ktFile.classes
+                        classes.forEach {
+                            println("class: ${it.name}")
+                            val fields = it.allFields
+
+
+                            fields.forEach {
+                                println("field: ${it.toString()} **")
+                            }
+                        }
+                        println("File content: ")
                     }
                 }
                 true
             })
         }
+    }
+
+    fun parse(source: String, code: CharSequence): KtFile? {
+        val ast = parsePsiFile(source, code).also { file ->
+            file?.collectDescendantsOfType<PsiErrorElement>()
+        }
+        if (ast != null) {
+            val nodes = ast.declarations.forEach { node ->
+                when (node) {
+                    is KtNamedFunction -> println("named fun")
+                    is KtParameter -> println("parameter")
+                    is KtProperty -> println("property")
+                    is KtClass -> {
+                        val elements = node.collectDescendantsOfType<PsiErrorElement>()
+                    }
+                    else -> error("Unable to convert node")
+                }
+            }
+        }
+        return ast
     }
 
     private fun parsePsiFile(name: String, code: CharSequence): KtFile? {
