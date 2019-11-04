@@ -71,7 +71,19 @@ class KotlinPsiListAction : AnAction() {
                     is KtParameter -> println("parameter")
                     is KtProperty -> println("property")
                     is KtClass -> {
-                        val elements = node.collectDescendantsOfType<PsiErrorElement>()
+                        println("class ${node.name}")
+//                        val elements = node.collectDescendantsOfType<PsiErrorElement>()
+
+                        val ktClass = node as KtClass
+                        val properties = ktClass.getProperties()
+                        properties.forEach {
+                            println("class property: ${it.name}")
+                        }
+
+                        val methods = node.declarations.filterIsInstance<KtNamedFunction>()
+                        methods.map {
+                            println("class function: ${it.name}")
+                        }
                     }
                     else -> error("Unable to convert node")
                 }
