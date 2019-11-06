@@ -1,5 +1,6 @@
 package actions.psi
 
+
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -8,6 +9,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
+import org.jetbrains.kotlin.com.intellij.lang.Language.getRegisteredLanguages
 import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer
 import org.jetbrains.kotlin.com.intellij.psi.PsiErrorElement
 import org.jetbrains.kotlin.com.intellij.testFramework.LightVirtualFile
@@ -18,9 +20,12 @@ import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 import org.jetbrains.kotlin.com.intellij.openapi.project.Project as KProject
 import org.jetbrains.kotlin.com.intellij.psi.PsiManager as KPsiManager
 
+//import com.intellij.lang.*
+
 class KotlinPsiListAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
+        lang()
         val eventProject = e.project
 
         val rootManager = ProjectRootManager.getInstance(eventProject!!)
@@ -69,15 +74,23 @@ class KotlinPsiListAction : AnAction() {
                 when (node) {
                     is KtNamedFunction -> println("named fun")
                     is KtParameter -> println("parameter")
-                    is KtProperty -> println("property")
+                    is KtProperty -> {
+                        println("property ${node.name}")
+                        val ktProperty = node as KtProperty
+                        println("-- accessors ${ktProperty.accessors}\n"
+                        + "-- modifiers: ${ktProperty.modifierList}")
+                    }
                     is KtClass -> {
                         println("class ${node.name}")
-//                        val elements = node.collectDescendantsOfType<PsiErrorElement>()
 
                         val ktClass = node as KtClass
                         val properties = ktClass.getProperties()
                         properties.forEach {
                             println("class property: ${it.name}")
+                            println("-- accessors ${it.accessors}\n"
+                                    + "-- modifiers: ${it.modifierList}")
+                            val mList = it.modifierList
+                            println(mList)
                         }
 
                         val methods = node.declarations.filterIsInstance<KtNamedFunction>()
@@ -104,5 +117,14 @@ class KotlinPsiListAction : AnAction() {
             CompilerConfiguration(),
             EnvironmentConfigFiles.JVM_CONFIG_FILES
         ).project
+    }
+
+    private fun lang() {
+        val languages = getRegisteredLanguages()
+        println("languages count: ${languages.size}")
+        languages.forEach {
+            println("language ### $it")
+        }
+
     }
 }
