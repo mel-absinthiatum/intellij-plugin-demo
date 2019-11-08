@@ -40,6 +40,7 @@ class ProjectTreePSIListAction : AnAction() {
                 true
             })
         }
+        showRootPathsInfo(e)
     }
 
     private fun showRootPathsInfo(e: AnActionEvent) {
