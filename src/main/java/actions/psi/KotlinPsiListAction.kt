@@ -154,6 +154,22 @@ class KotlinPsiListAction : AnAction() {
         val receiverTypeReference = this.receiverTypeReference
         val typeReference = this.typeReference
         val colon = this.colon
+
+        val references = this.references
+        references.forEach {
+            // Refers to nothing as it should be
+            println("refer: ${it.resolve()}")
+        }
+
+        if (receiverTypeReference != null) {
+            // Null
+            println("receiver type reference: ${receiverTypeReference.typeElement}")
+        }
+
+        if (typeReference != null) {
+            // Prints USER_TYPE
+            println("type reference: $typeReference , element: ${typeReference.typeElement}")
+        }
     }
 
     private fun KtClass.parse() {
@@ -217,3 +233,31 @@ class KotlinPsiListAction : AnAction() {
         }
     }
 }
+
+
+
+// TODO: - Tips:
+
+//        val project = e.getRequiredData<Project>(CommonDataKeys.PROJECT) as Project?
+//        val project = e.project as Project?
+//import org.jetbrains.kotlin.builder.KotlinPsiManager
+
+//kotlin/compiler/psi/src/org/jetbrains/kotlin/psi/
+//import org.jetbrains.kotlin.psi.KtVisitor
+//import javax.tools.FileObject
+//import com.intellij.openapi.project.Project
+
+//import com.intellij.psi.util.PsiTreeUtil
+//import com.intellij.openapi.vfs.VirtualFile
+//import org.jetbrains.kotlin.com.intellij.openapi.roots.impl.PackageDirectoryCache
+//import org.jetbrains.kotlin.com.intellij.openapi.vfs.*
+//import org.jetbrains.kotlin.com.intellij.openapi.vfs.VirtualFile as KVirtualFile
+//import org.jetbrains.kotlin.psi.KtFunction
+//import com.intellij.openapi.actionSystem.CommonDataKeys
+
+//fun getKtFile(file: FileObject): KtFile {
+//    return KotlinPsiManager.INSTANCE.getParsedFile(file)
+//}
+
+//                    val psiFile = PsiManager.getInstance(project).findFile(it) as? KtFile
+//                    val kotlinLang = Language.findLanguageByID("kotlin")
