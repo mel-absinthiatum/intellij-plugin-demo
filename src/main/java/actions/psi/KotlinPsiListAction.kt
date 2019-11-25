@@ -86,7 +86,8 @@ class KotlinPsiListAction : AnAction() {
                     is KtNamedFunction -> node.parse()
                     is KtProperty -> node.parse()
                     is KtClass -> node.parse()
-
+//                    is KtNamedDeclaration -> node.parse()
+                    is KtObjectDeclaration -> node.parse()
                     is KtParameter -> println("parameter")
 
                     else -> println("Unknown node: $node")
@@ -195,6 +196,24 @@ class KotlinPsiListAction : AnAction() {
     }
 
     private fun KtNamedDeclaration.parse() {
+        println("named declaration $this")
+        // Modifiers.
+        val ml = this.modifierList
+        val expectKW = KtTokens.EXPECT_KEYWORD
+        val exp = ml?.getModifier(expectKW)
+        if (exp != null) {
+            println("---- Expected (?)")
+        }
+    }
 
+    private fun KtObjectDeclaration.parse() {
+        println("object declaration $this")
+        // Modifiers.
+        val ml = this.modifierList
+        val expectKW = KtTokens.EXPECT_KEYWORD
+        val exp = ml?.getModifier(expectKW)
+        if (exp != null) {
+            println("---- Expected (object declaration)")
+        }
     }
 }
