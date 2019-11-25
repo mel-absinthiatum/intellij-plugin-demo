@@ -28,7 +28,13 @@ import org.jetbrains.kotlin.com.intellij.psi.PsiManager as KPsiManager
 class KotlinPsiListAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
-        lang()
+        printLanguages()
+        parseTree(e)
+    }
+
+
+
+    fun parseTree(e: AnActionEvent) {
         val eventProject = e.project
 
         val rootManager = ProjectRootManager.getInstance(eventProject!!)
@@ -43,25 +49,26 @@ class KotlinPsiListAction : AnAction() {
                 val doc = FileDocumentManager.getInstance().getDocument(it)
                 val text = doc?.charsSequence
                 val psiFile = PsiManager.getInstance(eventProject).findFile(it)
-                println("File: $psiFile")
+//                println("File: $psiFile")
 
                 if (text != null) {
                     val ktFile = parse(it.name, text)
 
-                    if (ktFile != null) {
-                        val importList = ktFile.importList
-                        val classes = ktFile.classes
-                        classes.forEach {
-                            println("class: ${it.name}")
-                            val fields = it.allFields
+//                    if (ktFile != null) {
+                        // TODO
+//                        val importList = ktFile.importList
+//                        val classes = ktFile.classes
+//                        classes.forEach {
+//                            println("class: ${it.name}")
+//                            val fields = it.allFields
+//
+//
+//                            fields.forEach {
+//                                println("field: ${it.toString()} **")
+//                            }
+//                        }
 
-
-                            fields.forEach {
-                                println("field: ${it.toString()} **")
-                            }
-                        }
-                        println("File content: ")
-                    }
+//                    }
                 }
                 true
             })
@@ -72,86 +79,17 @@ class KotlinPsiListAction : AnAction() {
         val ast = parsePsiFile(source, code).also { file ->
             file?.collectDescendantsOfType<PsiErrorElement>()
         }
-        if (ast != null) {
-            val nodes = ast.declarations.forEach { node ->
+        ast?.declarations?.forEach { node ->
                 when (node) {
-                    is KtNamedFunction -> println("named fun")
+                    is KtNamedFunction -> node.parse()
+                    is KtProperty -> node.parse()
+                    is KtClass -> node.parse()
+
                     is KtParameter -> println("parameter")
-                    is KtProperty -> {
-                        println("property ${node.name}")
-                        val ktProperty = node as KtProperty
-                        println("-- accessors ${ktProperty.accessors}\n"
-                        + "-- modifiers: ${ktProperty.modifierList}")
-                        val expectKW = KtTokens.EXPECT_KEYWORD
-                        val exp = node.modifierList?.getModifier(expectKW)
-                        println("-- Expected (pr) ${exp ?: "is absent"}")
-                    }
-                    is KtClass -> {
-                        println("class ${node.name}")
 
-
-                        val expectKW = KtTokens.EXPECT_KEYWORD
-                        val exp = node.modifierList?.getModifier(expectKW)
-                        println("-- Expected (class) ${exp ?: "is absent"}")
-
-                        val ktClass = node as KtClass
-                        val properties = ktClass.getProperties()
-                        properties.forEach {
-                            println("class property: ${it.name}")
-                            println("-- accessors ${it.accessors.joinToString()}\n"
-                                    + "-- modifiers: ${it.modifierList}")
-                            val mList = it.modifierList
-                            if (mList != null) {
-                                println(mList.annotations)
-                                println(mList.node.elementType)
-                                mList.forEachDescendantOfType<PsiElement> {
-                                    println("-- element: $it")
-                                }
-                                val expectKW = KtTokens.EXPECT_KEYWORD
-                                val exp = mList.getModifier(expectKW)
-                                println("-- Expected ${exp ?: "is absent"}")
-                            }
-
-                            val receiverTypeReference = it.receiverTypeReference
-                            val typeReference = it.typeReference
-                            val colon = it.colon
-//                            val a = it as KtProperty
-
-//                            val mods = a.declarations.filterIsInstance<KtNamedFunction>()
-// KtVisitor visitProperty
-                        }
-
-                        val methods = node.declarations.filterIsInstance<KtNamedFunction>()
-                        methods.map {
-                            println("function: ${it.name}")
-
-                            val parameters = it.valueParameters
-                            for (par in parameters) {
-                                if (par != null) {
-                                    println("-- parameter: $par")
-                                }
-                                else {
-                                    println("-- no par")
-                                }
-                            }
-
-                            val ml = it.modifierList
-
-                            if (ml != null) {
-//                                ml.forEachDescendantOfType<PsiElement> {
-//                                    println(" element: $it")
-//                                }
-//                                ml.forEachDescendantOfType<?> {}
-//                                ml.forEachDescendantOfType<KtModifierListElementType>()
-//                                val pub = ml.getModifier().isPublic()
-//                                val p = ml.getModifier("public")
-                            }
-                        }
-                    }
                     else -> error("Unable to convert node")
                 }
             }
-        }
         return ast
     }
 
@@ -169,12 +107,98 @@ class KotlinPsiListAction : AnAction() {
         ).project
     }
 
-    private fun lang() {
+    private fun printLanguages() {
         val languages = getRegisteredLanguages()
         println("languages count: ${languages.size}")
         languages.forEach {
             println("language ### $it")
+            if (it.isKindOf("kotlin")) {
+                println("%%% kotlin")
+            }
         }
+    }
+
+    private fun visit() {
+        // TODO: Explore KtVisitor
+//        val visitor = KtVisitor
+        val visitor = KtVisitorVoid()
+
+    }
+
+
+    private fun KtProperty.parse() {
+        println("property ${this.name}")
+        println("-- accessors ${this.accessors}\n")
+
+        // Modifiers.
+        val expectKW = KtTokens.EXPECT_KEYWORD
+        val exp = this.modifierList?.getModifier(expectKW)
+        println("-- Expected (pr) ${exp ?: "is absent"}")
+
+        // Modifiers as PsiElement.
+        val ml = this.modifierList
+        if (ml != null) {
+            println(ml.annotations)
+            println(ml.node.elementType)
+            ml.forEachDescendantOfType<PsiElement> {
+                println("-- element: $it")
+            }
+        }
+
+        // References.
+        val receiverTypeReference = this.receiverTypeReference
+        val typeReference = this.typeReference
+        val colon = this.colon
+    }
+
+    private fun KtClass.parse() {
+        println("class ${this.name}")
+
+        val exp = this.modifierList?.getModifier(KtTokens.EXPECT_KEYWORD)
+        val pub = this.modifierList?.getModifier(KtTokens.PUBLIC_KEYWORD)
+        println("-- Expected (class) ${exp ?: "is absent"}")
+
+        val properties = this.getProperties()
+        properties.forEach {
+            it.parse()
+        }
+
+        val methods = this.declarations.filterIsInstance<KtNamedFunction>()
+        methods.map {
+            it.parse()
+        }
+    }
+
+    private fun KtNamedFunction.parse() {
+        println("function: ${this.name}")
+
+        // Parameters.
+        val parameters = this.valueParameters
+        for (parameter in parameters) {
+            if (parameter != null) {
+                println("-- parameter: $parameter")
+            }
+        }
+
+        // Modifiers.
+        val ml = this.modifierList
+        val expectKW = KtTokens.EXPECT_KEYWORD
+        val exp = ml?.getModifier(expectKW)
+        println("-- Expected (pr) ${exp ?: "is absent"}")
+
+        if (ml != null) {
+            // TODO: Explore iterations through AST
+//                                ml.forEachDescendantOfType<PsiElement> {
+//                                    println(" element: $it")
+//                                }
+//                                ml.forEachDescendantOfType<?> {}
+//                                ml.forEachDescendantOfType<KtModifierListElementType>()
+//                                val pub = ml.getModifier().isPublic()
+//                                val p = ml.getModifier("public")
+        }
+    }
+
+    private fun KtNamedDeclaration.parse() {
 
     }
 }
