@@ -32,14 +32,12 @@ class KotlinPsiListAction : AnAction() {
         parseTree(e)
     }
 
-
-
     fun parseTree(e: AnActionEvent) {
         val eventProject = e.project
 
         val rootManager = ProjectRootManager.getInstance(eventProject!!)
 
-        val vFiles = rootManager.contentRoots
+        val vFiles = rootManager.contentSourceRoots
 
         for (file in vFiles) {
             println("\nRoot: ${file.url}")
@@ -49,10 +47,11 @@ class KotlinPsiListAction : AnAction() {
                 val doc = FileDocumentManager.getInstance().getDocument(it)
                 val text = doc?.charsSequence
                 val psiFile = PsiManager.getInstance(eventProject).findFile(it)
-//                println("File: $psiFile")
 
                 if (text != null) {
                     val ktFile = parse(it.name, text)
+                    println()
+                    println()
 
 //                    if (ktFile != null) {
                         // TODO
@@ -73,13 +72,16 @@ class KotlinPsiListAction : AnAction() {
                 true
             })
         }
+        println("done.")
     }
 
-    fun parse(source: String, code: CharSequence): KtFile? {
+    private fun parse(source: String, code: CharSequence): KtFile? {
         val ast = parsePsiFile(source, code).also { file ->
             file?.collectDescendantsOfType<PsiErrorElement>()
         }
-        ast?.declarations?.forEach { node ->
+        if (ast != null) {
+            println("Kotlin class: $ast")
+            ast.declarations.forEach { node ->
                 when (node) {
                     is KtNamedFunction -> node.parse()
                     is KtProperty -> node.parse()
@@ -87,9 +89,10 @@ class KotlinPsiListAction : AnAction() {
 
                     is KtParameter -> println("parameter")
 
-                    else -> error("Unable to convert node")
+                    else -> println("Unknown node: $node")
                 }
             }
+        }
         return ast
     }
 
@@ -122,7 +125,6 @@ class KotlinPsiListAction : AnAction() {
         // TODO: Explore KtVisitor
 //        val visitor = KtVisitor
         val visitor = KtVisitorVoid()
-
     }
 
 
@@ -133,15 +135,17 @@ class KotlinPsiListAction : AnAction() {
         // Modifiers.
         val expectKW = KtTokens.EXPECT_KEYWORD
         val exp = this.modifierList?.getModifier(expectKW)
-        println("-- Expected (pr) ${exp ?: "is absent"}")
+        if (exp != null) {
+            println("---- Expected (property)")
+        }
 
-        // Modifiers as PsiElement.
+        // Iterate modifiers.
         val ml = this.modifierList
         if (ml != null) {
-            println(ml.annotations)
-            println(ml.node.elementType)
+            println("-- annotations: ${ml.annotations}")
+
             ml.forEachDescendantOfType<PsiElement> {
-                println("-- element: $it")
+                println("-- modifier psi: $it name: ${it.text}")
             }
         }
 
@@ -156,8 +160,9 @@ class KotlinPsiListAction : AnAction() {
 
         val exp = this.modifierList?.getModifier(KtTokens.EXPECT_KEYWORD)
         val pub = this.modifierList?.getModifier(KtTokens.PUBLIC_KEYWORD)
-        println("-- Expected (class) ${exp ?: "is absent"}")
-
+        if (exp != null) {
+            println("---- Expected (class)")
+        }
         val properties = this.getProperties()
         properties.forEach {
             it.parse()
@@ -176,7 +181,7 @@ class KotlinPsiListAction : AnAction() {
         val parameters = this.valueParameters
         for (parameter in parameters) {
             if (parameter != null) {
-                println("-- parameter: $parameter")
+                println("-- parameter: ${parameter.name}")
             }
         }
 
@@ -184,17 +189,8 @@ class KotlinPsiListAction : AnAction() {
         val ml = this.modifierList
         val expectKW = KtTokens.EXPECT_KEYWORD
         val exp = ml?.getModifier(expectKW)
-        println("-- Expected (pr) ${exp ?: "is absent"}")
-
-        if (ml != null) {
-            // TODO: Explore iterations through AST
-//                                ml.forEachDescendantOfType<PsiElement> {
-//                                    println(" element: $it")
-//                                }
-//                                ml.forEachDescendantOfType<?> {}
-//                                ml.forEachDescendantOfType<KtModifierListElementType>()
-//                                val pub = ml.getModifier().isPublic()
-//                                val p = ml.getModifier("public")
+        if (exp != null) {
+            println("---- Expected (function)")
         }
     }
 
