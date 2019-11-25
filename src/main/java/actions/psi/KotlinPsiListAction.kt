@@ -1,6 +1,8 @@
 package actions.psi
 
 
+import com.intellij.lang.Language
+import com.intellij.lang.Language.getRegisteredLanguages
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -9,7 +11,6 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
-import org.jetbrains.kotlin.com.intellij.lang.Language.getRegisteredLanguages
 import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer
 import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.com.intellij.psi.PsiErrorElement
@@ -23,9 +24,12 @@ import org.jetbrains.kotlin.psi.psiUtil.forEachDescendantOfType
 import org.jetbrains.kotlin.com.intellij.openapi.project.Project as KProject
 import org.jetbrains.kotlin.com.intellij.psi.PsiManager as KPsiManager
 
+
 //import com.intellij.lang.*
 
 class KotlinPsiListAction : AnAction() {
+
+    private var kotlinLanguage: Language? = null
 
     override fun actionPerformed(e: AnActionEvent) {
         printLanguages()
@@ -44,12 +48,25 @@ class KotlinPsiListAction : AnAction() {
             VfsUtilCore.iterateChildrenRecursively(file, {
                 true
             }, {
+                if (kotlinLanguage != null) {
+                    val psiMan = PsiManager.getInstance(eventProject)
+                    val psi = psiMan.findFile(it)
+
+                    if (psi != null) {
+                        val viewProvider = psi.viewProvider
+                        val psi = viewProvider.getPsi(kotlinLanguage!!)
+                    }
+
+//                    val psi = viewProvider?.getPsi(kotlinLanguage!!)
+                }
+
+
                 val doc = FileDocumentManager.getInstance().getDocument(it)
                 val text = doc?.charsSequence
                 val psiFile = PsiManager.getInstance(eventProject).findFile(it)
 
                 if (text != null) {
-                    val ktFile = parse(it.name, text)
+//                    val ktFile = parse(it.name, text)
                     println()
                     println()
 
@@ -83,11 +100,11 @@ class KotlinPsiListAction : AnAction() {
             println("Kotlin class: $ast")
             ast.declarations.forEach { node ->
                 when (node) {
-                    is KtNamedFunction -> node.parse()
+//                    is KtNamedFunction -> node.parse()
                     is KtProperty -> node.parse()
                     is KtClass -> node.parse()
 //                    is KtNamedDeclaration -> node.parse()
-                    is KtObjectDeclaration -> node.parse()
+//                    is KtObjectDeclaration -> node.parse()
                     is KtParameter -> println("parameter")
 
                     else -> println("Unknown node: $node")
@@ -117,6 +134,7 @@ class KotlinPsiListAction : AnAction() {
         languages.forEach {
             println("language ### $it")
             if (it.isKindOf("kotlin")) {
+                kotlinLanguage = it
                 println("%%% kotlin")
             }
         }
@@ -170,6 +188,9 @@ class KotlinPsiListAction : AnAction() {
             // Prints USER_TYPE
             println("type reference: $typeReference , element: ${typeReference.typeElement}")
         }
+
+
+//        val refSearch = ReferencesSearch.search(this)
     }
 
     private fun KtClass.parse() {
