@@ -55,9 +55,10 @@ class KotlinPsiListAction : AnAction() {
                     if (psi != null) {
                         val viewProvider = psi.viewProvider
                         val psi = viewProvider.getPsi(kotlinLanguage!!)
+
+
                     }
 
-//                    val psi = viewProvider?.getPsi(kotlinLanguage!!)
                 }
 
 
@@ -65,13 +66,36 @@ class KotlinPsiListAction : AnAction() {
                 val text = doc?.charsSequence
                 val psiFile = PsiManager.getInstance(eventProject).findFile(it)
 
+                true
+            })
+        }
+        println("done.")
+    }
+
+
+    private fun printExpendedElementsByKtAnalysis(e: AnActionEvent) {
+        val eventProject = e.project
+
+        val rootManager = ProjectRootManager.getInstance(eventProject!!)
+
+        val vFiles = rootManager.contentSourceRoots
+
+        for (file in vFiles) {
+            println("\nRoot: ${file.url}")
+            VfsUtilCore.iterateChildrenRecursively(file, {
+                true
+            }, {
+                val doc = FileDocumentManager.getInstance().getDocument(it)
+                val text = doc?.charsSequence
+
                 if (text != null) {
-//                    val ktFile = parse(it.name, text)
+                    val ktFile = parse(it.name, text)
                     println()
                     println()
 
-//                    if (ktFile != null) {
-                        // TODO
+                    if (ktFile != null) {
+                        visit(ktFile)
+                    // TODO
 //                        val importList = ktFile.importList
 //                        val classes = ktFile.classes
 //                        classes.forEach {
@@ -84,13 +108,13 @@ class KotlinPsiListAction : AnAction() {
 //                            }
 //                        }
 
-//                    }
+                    }
                 }
                 true
             })
         }
-        println("done.")
     }
+            // Shenmue I game!! Akira game
 
     private fun parse(source: String, code: CharSequence): KtFile? {
         val ast = parsePsiFile(source, code).also { file ->
@@ -100,11 +124,11 @@ class KotlinPsiListAction : AnAction() {
             println("Kotlin class: $ast")
             ast.declarations.forEach { node ->
                 when (node) {
-//                    is KtNamedFunction -> node.parse()
+                    is KtNamedFunction -> node.parse()
                     is KtProperty -> node.parse()
                     is KtClass -> node.parse()
-//                    is KtNamedDeclaration -> node.parse()
-//                    is KtObjectDeclaration -> node.parse()
+                    is KtNamedDeclaration -> node.parse()
+                    is KtObjectDeclaration -> node.parse()
                     is KtParameter -> println("parameter")
 
                     else -> println("Unknown node: $node")
@@ -140,10 +164,23 @@ class KotlinPsiListAction : AnAction() {
         }
     }
 
-    private fun visit() {
+    private fun visit(file: KtFile) {
         // TODO: Explore KtVisitor
 //        val visitor = KtVisitor
         val visitor = KtVisitorVoid()
+        val v = KtTreeVisitor<PsiElement>()
+
+
+        file.accept(object : KtTreeVisitor<PsiElement>() {
+            override fun visitKtElement(element: KtElement, data: PsiElement?): Void? {
+                super.visitKtElement(element, data)
+
+                System.out.println("Found a variable at offset " + element.getTextRange().getStartOffset())
+                return null
+            }
+
+        })
+
     }
 
 
