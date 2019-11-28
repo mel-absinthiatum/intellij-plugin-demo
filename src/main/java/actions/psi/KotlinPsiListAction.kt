@@ -1,8 +1,8 @@
 package actions.psi
 
-//import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
-//import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
-//import org.jetbrains.kotlin.openapi.util.Disposer
+/**
+* UNUSED.
+* */
 
 import com.intellij.lang.Language
 import com.intellij.lang.Language.getRegisteredLanguages
@@ -19,11 +19,6 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 import org.jetbrains.kotlin.psi.psiUtil.forEachDescendantOfType
 
-//import org.jetbrains.kotlin.com.intellij.openapi.project.Project as KProject
-//import org.jetbrains.kotlin.com.intellij.psi.PsiManager as KPsiManager
-
-
-//import com.intellij.lang.*
 
 class KotlinPsiListAction : AnAction() {
 
@@ -31,7 +26,7 @@ class KotlinPsiListAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         printLanguages()
-        printExpendedElementsByKtAnalysis(e)
+        printExpectedElementsByKtAnalysis(e)
     }
 
     fun parseTree(e: AnActionEvent) {
@@ -53,12 +48,8 @@ class KotlinPsiListAction : AnAction() {
                     if (psi != null) {
                         val viewProvider = psi.viewProvider
                         val psi = viewProvider.getPsi(kotlinLanguage!!)
-
-
                     }
-
                 }
-
 
                 val doc = FileDocumentManager.getInstance().getDocument(it)
                 val text = doc?.charsSequence
@@ -71,7 +62,7 @@ class KotlinPsiListAction : AnAction() {
     }
 
 
-    private fun printExpendedElementsByKtAnalysis(e: AnActionEvent) {
+    private fun printExpectedElementsByKtAnalysis(e: AnActionEvent) {
         val eventProject = e.project
 
         val rootManager = ProjectRootManager.getInstance(eventProject!!)
@@ -88,9 +79,6 @@ class KotlinPsiListAction : AnAction() {
                 println("file type: ${psiF?.fileType?.name}")
 
                 if (psiF != null && psiF.fileType.name == "Kotlin") {
-//                    val visitor = namedDeclarationVisitor { declaredName ->
-//                        println("Declaration name ${declaredName.name}")
-//                    }
                     println("fcgfc ${psiF.name}")
                     psiF.acceptChildren(object: KtTreeVisitorVoid() {
                         override fun visitNamedDeclaration(declaration: KtNamedDeclaration) {
@@ -105,50 +93,14 @@ class KotlinPsiListAction : AnAction() {
                     println()
                 }
 
-//                    // TODO
-////                        val importList = ktFile.importList
+//                TODO
+//                val refSearch = ReferencesSearch.search(this)
+//                val importList = ktFile.importList
 
                 true
             })
         }
     }
-            // Shenmue I game!! Akira game
-
-//    private fun parse(source: String, code: CharSequence): KtFile? {
-//        val ast = parsePsiFile(source, code).also { file ->
-//            file?.collectDescendantsOfType<PsiErrorElement>()
-//        }
-//        if (ast != null) {
-//            println("Kotlin class: $ast")
-//            ast.declarations.forEach { node ->
-//                when (node) {
-//                    is KtNamedFunction -> node.parse()
-//                    is KtProperty -> node.parse()
-//                    is KtClass -> node.parse()
-//                    is KtNamedDeclaration -> node.parse()
-//                    is KtObjectDeclaration -> node.parse()
-//                    is KtParameter -> println("parameter")
-//
-//                    else -> println("Unknown node: $node")
-//                }
-//            }
-//        }
-//        return ast
-//    }
-
-//    private fun parsePsiFile(name: String, code: CharSequence): KtFile? {
-//        val project = project()
-//        return KPsiManager.getInstance(project)
-//            .findFile(LightVirtualFile(name, KotlinFileType.INSTANCE, code)) as KtFile?
-//    }
-//
-//    private fun project(): KProject {
-//        return KotlinCoreEnvironment.createForProduction(
-//            Disposer.newDisposable(),
-//            CompilerConfiguration(),
-//            EnvironmentConfigFiles.JVM_CONFIG_FILES
-//        ).project
-//    }
 
     private fun printLanguages() {
         val languages = getRegisteredLanguages()
@@ -163,12 +115,10 @@ class KotlinPsiListAction : AnAction() {
     }
 
     private fun visit(file: KtFile) {
-        // TODO: Explore KtVisitor
-//        val visitor = KtVisitor
-        val visitor = KtVisitorVoid()
-        val v = KtTreeVisitor<PsiElement>()
-
-
+        // TODO: explore difference between various visitors
+        // val visitor = namedDeclarationVisitor { declaredName ->
+        //     println("Declaration name ${declaredName.name}")
+        // }
         file.accept(object : KtTreeVisitor<PsiElement>() {
             override fun visitKtElement(element: KtElement, data: PsiElement?): Void? {
                 super.visitKtElement(element, data)
@@ -176,9 +126,7 @@ class KotlinPsiListAction : AnAction() {
                 System.out.println("Found a variable at offset " + element.getTextRange().getStartOffset())
                 return null
             }
-
         })
-
     }
 
 
@@ -225,7 +173,6 @@ class KotlinPsiListAction : AnAction() {
         }
 
 
-//        val refSearch = ReferencesSearch.search(this)
     }
 
     private fun KtClass.parse() {
@@ -289,31 +236,3 @@ class KotlinPsiListAction : AnAction() {
         }
     }
 }
-
-
-
-// TODO: - Tips:
-
-//        val project = e.getRequiredData<Project>(CommonDataKeys.PROJECT) as Project?
-//        val project = e.project as Project?
-//import org.jetbrains.kotlin.builder.KotlinPsiManager
-
-//kotlin/compiler/psi/src/org/jetbrains/kotlin/psi/
-//import org.jetbrains.kotlin.psi.KtVisitor
-//import javax.tools.FileObject
-//import com.intellij.openapi.project.Project
-
-//import com.intellij.psi.util.PsiTreeUtil
-//import com.intellij.openapi.vfs.VirtualFile
-//import org.jetbrains.kotlin.com.intellij.openapi.roots.impl.PackageDirectoryCache
-//import org.jetbrains.kotlin.com.intellij.openapi.vfs.*
-//import org.jetbrains.kotlin.com.intellij.openapi.vfs.VirtualFile as KVirtualFile
-//import org.jetbrains.kotlin.psi.KtFunction
-//import com.intellij.openapi.actionSystem.CommonDataKeys
-
-//fun getKtFile(file: FileObject): KtFile {
-//    return KotlinPsiManager.INSTANCE.getParsedFile(file)
-//}
-
-//                    val psiFile = PsiManager.getInstance(project).findFile(it) as? KtFile
-//                    val kotlinLang = Language.findLanguageByID("kotlin")

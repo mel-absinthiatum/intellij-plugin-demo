@@ -5,21 +5,10 @@
 
     <description>This IntelliJ IDEA plugin is intended for demonstrations of several plugin abilities and elements.</description>
 
-<!--    <description><![CDATA[
-      Demo plugin written in Kotlin for Kotlin syntax check to
-      ensure camelcase naming and also a notification plugin
-    ]]></description>
-
-    <change-notes><![CDATA[
-      Release notes : Camelcase naming check and Notification plugin
-    ]]>
-    </change-notes>
-
-    <depends>org.jetbrains.kotlin</depends>-->
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
     <depends>org.jetbrains.kotlin</depends>
-<!--    <depends>com.intellij.modules.lang</depends>-->
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.platform</depends>
+
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Date-time" secondary="true" icon="/toolWindowResources/plus.svg" anchor="right"
@@ -33,20 +22,24 @@
             <add-to-group group-id="MainMenu" anchor="last"/>
             <action id="Myplugin.Textboxes" class="HelloAction" text="Hello" description="Says hello"/>
         </group>
+
         <action id="actions.SimpleDemoAction" class="actions.SimpleDemoAction" text="Simple Demo Action"
                 description="Intellij action demo (tools menu)">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
+
         <group id="actions.GroupedActions" text="Grouped Demo Actions" popup="true">
             <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="actions.SimpleDemoAction"/>
             <action class="actions.GrouppedDemoAction"
                     id="actions.SimpleGroupedAction" text="A Grouped Action" description="Grouped Action Demo">
             </action>
         </group>
+
         <group id="actions.DynamicActionGroup" class="actions.DynamicActionGroup" popup="true"
                text="Dynamic Action Group" description="Dynamic Action Group Demo">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </group>
+
         <group id="actions.ExampleCustomDefaultActionGroup"
                class="actions.CustomActionGroup" popup="true"
                text="Example Custom DefaultActionGroup" description="Custom DefaultActionGroup Demo">
@@ -54,6 +47,7 @@
             <action class="actions.SimpleDemoAction" id="actions.CustomGroupedAction"
                     text="A Custom Grouped Action" description="Custom Grouped Action Demo"/>
         </group>
+
         <action id="EditorBasics.EditorIllustrationAction"
                 class="actions.EditorDemoAction"
                 text="Editor Replace Text"
@@ -62,6 +56,7 @@
             <keyboard-shortcut first-keystroke="control alt A" second-keystroke="C" keymap="$default"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
+
         <action id="EditorBasics.EditorPSIInfoAction"
                 class="actions.psi.EditorPSIInfoAction"
                 text="PSI info"
@@ -70,20 +65,26 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
 
-        <action id="EditorBasics.ProjectTreePSIListAction"
+        <action id="PSI.ProjectTreePSIListAction"
                 class="actions.psi.ProjectTreePSIListAction"
                 text="PSI info"
                 description="Show PSI info of the root and files tree.">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
 
-        <action id="EditorBasics.KotlinPsiListAction"
+        <action id="PSI.KotlinPsiListAction"
                 class="actions.psi.KotlinPsiListAction"
                 text="Kotlin PSI info"
                 description="Show kotlin PSI info of the files tree.">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
-    </actions>
 
+        <action id="PSI.KotlinVisitorAction"
+                class="actions.psi.KotlinVisitorAction"
+                text="Kotlin Visitor"
+                description="Visit Kotlin files content.">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+    </actions>
 
 </idea-plugin>
