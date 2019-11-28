@@ -1,5 +1,6 @@
 package actions.psi
 
+import abyss.model.DeclarationType
 import abyss.model.ItemCoordinates
 import abyss.model.SharedItemModel
 import abyss.model.SharedType
@@ -21,8 +22,9 @@ class KotlinVisitorAction : AnAction() {
     }
 
     private fun retrieveExpectedElements(e: AnActionEvent) {
+        var expectedModelList: MutableList<SharedItemModel> = arrayListOf()
+        var actualModelList: MutableList<SharedItemModel> = arrayListOf()
         var modelList: MutableList<SharedItemModel> = arrayListOf()
-        var expectedModelList: Array<SharedItemModel> = arrayOf()
 
         val eventProject = e.project
         val rootManager = ProjectRootManager.getInstance(eventProject!!)
@@ -51,6 +53,7 @@ class KotlinVisitorAction : AnAction() {
                                 else -> return
                             }
 
+                            // TODO: Handle emptiness
                             val name = declaration.name ?: ""
                             val text = declaration.text ?: ""
 
@@ -58,25 +61,26 @@ class KotlinVisitorAction : AnAction() {
 
                             println("file name ${psiF.name}")
 
+                            val declarationType: DeclarationType =
                             when (declaration) {
-                                is KtClass -> {
-                                    val itemCoordinates =  ItemCoordinates(path, declaration.textOffset)
-                                    val item = SharedItemModel(name, text, sharedType, itemCoordinates)
-                                    modelList.add(item)
-
-                                }
-                                is KtNamedFunction -> {
-                                    println("ssf ${declaration.bodyExpression}")
-                                    println("function")
-                                }
-                                is KtProperty -> println("property")
+                                is KtClass -> DeclarationType.CLASS
+                                is KtNamedFunction -> DeclarationType.NAMED_FUNCTION
+                                is KtProperty -> DeclarationType.PROPERTY
+                                is KtObjectDeclaration -> DeclarationType.OBJECT
+                                else -> DeclarationType.UNRESOLVED
                             }
 
-                            declaration.name?.let { declaredName ->
-                                println("Declaration name $declaredName")
-
-                                super.visitNamedDeclaration(declaration)
+                            val itemCoordinates =  ItemCoordinates(path, declaration.textOffset)
+                            val item = SharedItemModel(name, text, declarationType, sharedType, itemCoordinates)
+                            if (sharedType == SharedType.EXPECTED) {
+                                expectedModelList.add(item)
+                            } else if (sharedType == SharedType.ACTUAL) {
+                                actualModelList.add(item)
                             }
+
+
+
+                            super.visitNamedDeclaration(declaration)
                         }
 
                     })
