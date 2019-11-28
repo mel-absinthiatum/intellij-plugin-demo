@@ -1,44 +1,48 @@
+buildscript {
+    ext.kotlin_version = '1.3.50'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.4.10'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.21'
+}
+
+apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'kotlin'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+
+intellij {
+    version '2019.1.3'
+    plugins 'kotlin'
+    updateSinceUntilBuild false
 }
 
 group 'absinthium.mel'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
-//apply plugin: "org.jetbrains.kotlin.jvm"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-//    compile "org.jetbrains.kotlin:kotlin-stdlib:1.3.21"
-    implementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.21"
-//
-//    implementation "org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.3.21"
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
-intellij {
-    version '2019.1.3'
-}
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
+
 patchPluginXml {
     changeNotes """
       Add change notes here.<br>
       <em>most HTML tags may be used</em>"""
 }
-
-
-//https://github.com/JetBrains/kotlin/tree/master/idea
-//https://github.com/JetBrains/kotlin/tree/master/compiler/psi/src/org/jetbrains/kotlin

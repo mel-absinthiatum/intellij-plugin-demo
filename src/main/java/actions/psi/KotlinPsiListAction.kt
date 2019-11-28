@@ -1,5 +1,8 @@
 package actions.psi
 
+//import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
+//import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
+//import org.jetbrains.kotlin.openapi.util.Disposer
 
 import com.intellij.lang.Language
 import com.intellij.lang.Language.getRegisteredLanguages
@@ -8,21 +11,16 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiManager
-import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
-import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
-import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer
-import org.jetbrains.kotlin.com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.com.intellij.psi.PsiErrorElement
-import org.jetbrains.kotlin.com.intellij.testFramework.LightVirtualFile
-import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 import org.jetbrains.kotlin.psi.psiUtil.forEachDescendantOfType
-import org.jetbrains.kotlin.com.intellij.openapi.project.Project as KProject
-import org.jetbrains.kotlin.com.intellij.psi.PsiManager as KPsiManager
+
+//import org.jetbrains.kotlin.com.intellij.openapi.project.Project as KProject
+//import org.jetbrains.kotlin.com.intellij.psi.PsiManager as KPsiManager
 
 
 //import com.intellij.lang.*
@@ -33,7 +31,7 @@ class KotlinPsiListAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         printLanguages()
-        parseTree(e)
+        printExpendedElementsByKtAnalysis(e)
     }
 
     fun parseTree(e: AnActionEvent) {
@@ -85,72 +83,72 @@ class KotlinPsiListAction : AnAction() {
             VfsUtilCore.iterateChildrenRecursively(file, {
                 true
             }, {
-                val doc = FileDocumentManager.getInstance().getDocument(it)
-                val text = doc?.charsSequence
+                val psiF = PsiManager.getInstance(eventProject).findFile(it)
+                val ast = psiF?.collectDescendantsOfType<PsiErrorElement>()
+                println("file type: ${psiF?.fileType?.name}")
 
-                if (text != null) {
-                    val ktFile = parse(it.name, text)
+                if (psiF != null && psiF.fileType.name == "Kotlin") {
+//                    val visitor = namedDeclarationVisitor { declaredName ->
+//                        println("Declaration name ${declaredName.name}")
+//                    }
+                    println("fcgfc ${psiF.name}")
+                    psiF.acceptChildren(object: KtTreeVisitorVoid() {
+                        override fun visitNamedDeclaration(declaration: KtNamedDeclaration) {
+                            declaration.name?.let { declaredName ->
+                                println("Declaration name $declaredName")
+                                super.visitNamedDeclaration(declaration)
+                            }
+                        }
+                    })
+
                     println()
                     println()
-
-                    if (ktFile != null) {
-                        visit(ktFile)
-                    // TODO
-//                        val importList = ktFile.importList
-//                        val classes = ktFile.classes
-//                        classes.forEach {
-//                            println("class: ${it.name}")
-//                            val fields = it.allFields
-//
-//
-//                            fields.forEach {
-//                                println("field: ${it.toString()} **")
-//                            }
-//                        }
-
-                    }
                 }
+
+//                    // TODO
+////                        val importList = ktFile.importList
+
                 true
             })
         }
     }
             // Shenmue I game!! Akira game
 
-    private fun parse(source: String, code: CharSequence): KtFile? {
-        val ast = parsePsiFile(source, code).also { file ->
-            file?.collectDescendantsOfType<PsiErrorElement>()
-        }
-        if (ast != null) {
-            println("Kotlin class: $ast")
-            ast.declarations.forEach { node ->
-                when (node) {
-                    is KtNamedFunction -> node.parse()
-                    is KtProperty -> node.parse()
-                    is KtClass -> node.parse()
-                    is KtNamedDeclaration -> node.parse()
-                    is KtObjectDeclaration -> node.parse()
-                    is KtParameter -> println("parameter")
+//    private fun parse(source: String, code: CharSequence): KtFile? {
+//        val ast = parsePsiFile(source, code).also { file ->
+//            file?.collectDescendantsOfType<PsiErrorElement>()
+//        }
+//        if (ast != null) {
+//            println("Kotlin class: $ast")
+//            ast.declarations.forEach { node ->
+//                when (node) {
+//                    is KtNamedFunction -> node.parse()
+//                    is KtProperty -> node.parse()
+//                    is KtClass -> node.parse()
+//                    is KtNamedDeclaration -> node.parse()
+//                    is KtObjectDeclaration -> node.parse()
+//                    is KtParameter -> println("parameter")
+//
+//                    else -> println("Unknown node: $node")
+//                }
+//            }
+//        }
+//        return ast
+//    }
 
-                    else -> println("Unknown node: $node")
-                }
-            }
-        }
-        return ast
-    }
-
-    private fun parsePsiFile(name: String, code: CharSequence): KtFile? {
-        val project = project()
-        return KPsiManager.getInstance(project)
-            .findFile(LightVirtualFile(name, KotlinFileType.INSTANCE, code)) as KtFile?
-    }
-
-    private fun project(): KProject {
-        return KotlinCoreEnvironment.createForProduction(
-            Disposer.newDisposable(),
-            CompilerConfiguration(),
-            EnvironmentConfigFiles.JVM_CONFIG_FILES
-        ).project
-    }
+//    private fun parsePsiFile(name: String, code: CharSequence): KtFile? {
+//        val project = project()
+//        return KPsiManager.getInstance(project)
+//            .findFile(LightVirtualFile(name, KotlinFileType.INSTANCE, code)) as KtFile?
+//    }
+//
+//    private fun project(): KProject {
+//        return KotlinCoreEnvironment.createForProduction(
+//            Disposer.newDisposable(),
+//            CompilerConfiguration(),
+//            EnvironmentConfigFiles.JVM_CONFIG_FILES
+//        ).project
+//    }
 
     private fun printLanguages() {
         val languages = getRegisteredLanguages()

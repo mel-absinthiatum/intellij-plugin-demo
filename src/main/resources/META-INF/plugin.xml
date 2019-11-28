@@ -5,10 +5,21 @@
 
     <description>This IntelliJ IDEA plugin is intended for demonstrations of several plugin abilities and elements.</description>
 
+<!--    <description><![CDATA[
+      Demo plugin written in Kotlin for Kotlin syntax check to
+      ensure camelcase naming and also a notification plugin
+    ]]></description>
+
+    <change-notes><![CDATA[
+      Release notes : Camelcase naming check and Notification plugin
+    ]]>
+    </change-notes>
+
+    <depends>org.jetbrains.kotlin</depends>-->
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
-
-    <depends>com.intellij.modules.lang</depends>
+    <depends>org.jetbrains.kotlin</depends>
+<!--    <depends>com.intellij.modules.lang</depends>-->
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Date-time" secondary="true" icon="/toolWindowResources/plus.svg" anchor="right"
