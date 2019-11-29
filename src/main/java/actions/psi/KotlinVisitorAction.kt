@@ -1,9 +1,6 @@
 package actions.psi
 
-import abyss.model.DeclarationType
-import abyss.model.ItemCoordinates
-import abyss.model.SharedItemModel
-import abyss.model.SharedType
+import abyss.model.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.roots.ProjectRootManager
@@ -22,9 +19,9 @@ class KotlinVisitorAction : AnAction() {
     }
 
     private fun retrieveExpectedElements(e: AnActionEvent) {
-        var expectedModelList: MutableList<SharedItemModel> = arrayListOf()
-        var actualModelList: MutableList<SharedItemModel> = arrayListOf()
-        var modelList: MutableList<SharedItemModel> = arrayListOf()
+        var expectedCoordinatesMap: MutableMap<ItemMetaInfo, ItemCoordinates> = mutableMapOf()
+        var actualCoordinatesMap: MutableMap<ItemMetaInfo, MutableSet<ItemCoordinates>> = mutableMapOf()
+        var metaInfoSet: MutableSet<ItemMetaInfo> = mutableSetOf()
 
         val eventProject = e.project
         val rootManager = ProjectRootManager.getInstance(eventProject!!)
@@ -34,11 +31,11 @@ class KotlinVisitorAction : AnAction() {
             println("\nRoot: ${file.url}")
             VfsUtilCore.iterateChildrenRecursively(file, {
                 true
-            }, {
-                val canonicalPath = it.canonicalPath
-                val path = it.path
-                val path2 = it.pathBeforeJ2K
-                val psiF = PsiManager.getInstance(eventProject).findFile(it)
+            }, { virtualFile ->
+                val canonicalPath = virtualFile.canonicalPath
+                val path = virtualFile.path
+                val path2 = virtualFile.pathBeforeJ2K
+                val psiF = PsiManager.getInstance(eventProject).findFile(virtualFile)
 
                 if (psiF != null && psiF.fileType.name == "Kotlin") {
                     psiF.acceptChildren(object : KtTreeVisitorVoid() {
@@ -59,34 +56,37 @@ class KotlinVisitorAction : AnAction() {
 
                             val public = declaration.isPublic
 
-                            println("file name ${psiF.name}")
-
                             val declarationType: DeclarationType =
                             when (declaration) {
                                 is KtClass -> DeclarationType.CLASS
                                 is KtNamedFunction -> DeclarationType.NAMED_FUNCTION
                                 is KtProperty -> DeclarationType.PROPERTY
                                 is KtObjectDeclaration -> DeclarationType.OBJECT
-                                else -> DeclarationType.UNRESOLVED
+                                is KtTypeAlias -> DeclarationType.CLASS
+                                else -> return//DeclarationType.UNRESOLVED
                             }
 
-                            val itemCoordinates =  ItemCoordinates(path, declaration.textOffset)
-                            val item = SharedItemModel(name, text, declarationType, sharedType, itemCoordinates)
+                            val itemCoordinates =  ItemCoordinates(path, declaration.textOffset, text)
+                            val itemInfo = ItemMetaInfo(name, declarationType)
+
+                            metaInfoSet.add(itemInfo)
                             if (sharedType == SharedType.EXPECTED) {
-                                expectedModelList.add(item)
+                                expectedCoordinatesMap[itemInfo] = itemCoordinates
                             } else if (sharedType == SharedType.ACTUAL) {
-                                actualModelList.add(item)
+                                val key = actualCoordinatesMap.keys.findLast {
+                                    it == itemInfo
+                                }
+                                if (actualCoordinatesMap[itemInfo] != null) {
+                                    (actualCoordinatesMap[itemInfo])?.add(itemCoordinates)
+                                } else {
+                                    (actualCoordinatesMap[itemInfo]) = mutableSetOf(itemCoordinates)
+                                }
                             }
-
-
 
                             super.visitNamedDeclaration(declaration)
                         }
 
                     })
-
-                    println()
-                    println()
                 }
 
 //                TODO
@@ -96,6 +96,20 @@ class KotlinVisitorAction : AnAction() {
                 true
             })
         }
+
+        val items = metaInfoSet.map {
+            SharedItemModel(it)
+        }
+
+        expectedCoordinatesMap.forEach { info, coordinates ->
+            items.findLast { it.metaInfo == info }?.expectedItem = coordinates
+        }
+
+        actualCoordinatesMap.forEach{ info, coordinates ->
+            items.findLast { it.metaInfo == info }?.actualItems = coordinates
+        }
+
+        println(items.joinToString("\n\n"))
     }
 
     private fun visit(file: KtFile) {
@@ -107,7 +121,7 @@ class KotlinVisitorAction : AnAction() {
             override fun visitKtElement(element: KtElement, data: PsiElement?): Void? {
                 super.visitKtElement(element, data)
 
-                System.out.println("Found a variable at offset " + element.getTextRange().getStartOffset())
+                println("Found a variable at offset " + element.getTextRange().getStartOffset())
                 return null
             }
         })
