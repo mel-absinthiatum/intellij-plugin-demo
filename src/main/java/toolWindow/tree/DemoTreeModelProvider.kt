@@ -24,7 +24,9 @@ import javax.swing.tree.TreeModel
 
 
 class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val project: Project) {
+
     private val notificationProvider = SimpleNotificationProvider(project)
+
     fun createToolWindowTreeModel(): TreeModel {
 
         val rootNode = makeCatalogNode("UI Demonstrations").including(
