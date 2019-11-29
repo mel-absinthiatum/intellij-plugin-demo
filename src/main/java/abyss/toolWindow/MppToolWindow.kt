@@ -50,7 +50,7 @@ class MppToolWindow (private val project: Project, private val toolWindow: ToolW
     }
 
     private fun makeTreeCellRenderer(): TreeCellRenderer {
-        val imageIcon = ImageIcon(javaClass.getResource("/toolWindowResources/star.png"))
+        val imageIcon = ImageIcon(javaClass.getResource("/abyss/Obj.png"))
         val renderer = DefaultTreeCellRenderer()
         renderer.leafIcon = imageIcon
         renderer.borderSelectionColor = null
