@@ -57,7 +57,7 @@ class ProjectTreePSIListAction : AnAction() {
         val projectRootPath = project.basePath
         Messages.showInfoMessage("Source roots for the $projectName plugin:\n$sourceRootsList\n\n"
                 + "Content roots:\n$contentRootUrls\n\nProject file path$projectFilePath\n"
-                + "Project root path: $projectRootPath", "Project Properties")
+                + "Project root path: $projectRootPath", "Project root paths")
 
     }
 }

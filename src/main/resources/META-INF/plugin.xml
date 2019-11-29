@@ -10,7 +10,29 @@
     <depends>com.intellij.modules.platform</depends>
 
 
+
+    <!-- Plugin's project components -->
+    <project-components>
+        <component>
+            <!-- Interface and implementation classes are the same -->
+            <implementation-class>abyss.applicationComponent.ExperimentalProjectComponent</implementation-class>
+
+            <!-- If the "workspace" option is set "true", the component
+                 saves its state to the .iws file instead of the .ipr file.
+                 Note that the <option> element is used only if the component
+                 implements the JDOMExternalizable interface. Otherwise, the
+                 use of the <option> element takes no effect.  -->
+<!--            <option name="workspace" value="true" />-->
+
+<!--            &lt;!&ndash; If the "loadForDefaultProject" tag is present, the project component is instantiated also for the default project. &ndash;&gt;-->
+<!--            <loadForDefaultProject/>-->
+        </component>
+    </project-components>
     <extensions defaultExtensionNs="com.intellij">
+            <applicationService serviceInterface="abyss.applicationComponent.ExperimentalProjectService"
+                                serviceImplementation="abyss.applicationComponent.ExperimentalProjectService"/>
+
+
         <toolWindow id="Date-time" secondary="true" icon="/toolWindowResources/plus.svg" anchor="right"
                     factoryClass="toolWindow.DateTimeToolWindowFactory"/>
         <toolWindow id="Elements Demo" secondary="true" icon="/toolWindowResources/plus.svg" anchor="left"
@@ -23,6 +45,8 @@
         <group id="MyPlugin.SampleMenu" text="Greeting" description="Greeting menu">
             <add-to-group group-id="MainMenu" anchor="last"/>
             <action id="Myplugin.Textboxes" class="HelloAction" text="Hello" description="Says hello"/>
+            <action id="intellij-plugin-demo.components" class="actions.ComponentsDemonstrationAction" text="Components demo"/>
+            <action id="intellij-plugin-demo.services" class="actions.ServiceDemonstrationAction" text="Service and persistence demo"/>
         </group>
 
         <action id="actions.SimpleDemoAction" class="actions.SimpleDemoAction" text="Simple Demo Action"
@@ -87,6 +111,8 @@
                 description="Visit Kotlin files content.">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
+
+
     </actions>
 
 </idea-plugin>
