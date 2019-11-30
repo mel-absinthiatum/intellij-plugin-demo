@@ -1,28 +1,38 @@
 package abyss.psi
 
-import abyss.model.ItemCoordinates
-import abyss.model.ItemMetaInfo
-import abyss.model.SharedItemModel
+// TODO: Use coroutines
+
+import abyss.model.*
+import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.idea.actions.pathBeforeJ2K
-import org.jetbrains.kotlin.psi.KtNamedDeclaration
-import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
+import org.jetbrains.kotlin.idea.util.isEffectivelyActual
+import org.jetbrains.kotlin.idea.util.isExpectDeclaration
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.isPublic
 
 class SharedItemsProvider {
 
-    fun retrieveSharedItems(project: Project): Collection<SharedItemModel> {
-        var expectedCoordinatesMap: MutableMap<ItemMetaInfo, ItemCoordinates> = mutableMapOf()
-        var actualCoordinatesMap: MutableMap<ItemMetaInfo, MutableSet<ItemCoordinates>> = mutableMapOf()
-        var metaInfoSet: MutableSet<ItemMetaInfo> = mutableSetOf()
+    fun getSharedItems(project: Project, completion: (Collection<SharedItemModel>) -> Unit) {
+        DumbServiceImpl.getInstance(project).smartInvokeLater {
+            val collection = retrieveSharedItems(project)
+            completion(collection)
+        }
+    }
+
+    private fun retrieveSharedItems(project: Project): Collection<SharedItemModel> {
+        val expectedCoordinatesMap: MutableMap<ItemMetaInfo, ItemCoordinates> = mutableMapOf()
+        val actualCoordinatesMap: MutableMap<ItemMetaInfo, MutableSet<ItemCoordinates>> = mutableMapOf()
+        val metaInfoSet: MutableSet<ItemMetaInfo> = mutableSetOf()
 
 
         val rootManager = ProjectRootManager.getInstance(project)
-        val vFiles = rootManager.contentSourceRoots
+        val virtualFiles = rootManager.contentSourceRoots
 
-        for (file in vFiles) {
+        for (file in virtualFiles) {
             println("\nRoot: ${file.url}")
             VfsUtilCore.iterateChildrenRecursively(file, {
                 true
@@ -30,53 +40,53 @@ class SharedItemsProvider {
                 val canonicalPath = virtualFile.canonicalPath
                 val path = virtualFile.path
                 val path2 = virtualFile.pathBeforeJ2K
-                val psiF = PsiManager.getInstance(project).findFile(virtualFile)
+                val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
 
-                if (psiF != null && psiF.fileType.name == "Kotlin") {
-                    psiF.accept(object : KtTreeVisitorVoid() {
+                if (psiFile != null && psiFile.fileType.name == "Kotlin") {
+                    psiFile.accept(object : KtTreeVisitorVoid() {
                         override fun visitNamedDeclaration(declaration: KtNamedDeclaration) {
-//                            val expected = declaration.isExpectDeclaration()
-//                            val actual = declaration.isEffectivelyActual()
-//
-//                            val sharedType: SharedType =
-//                                when {
-//                                    (expected) -> SharedType.EXPECTED
-//                                    (actual) -> SharedType.ACTUAL
-//                                    else -> return
-//                                }
-//
-//                            // TODO: Handle emptiness
-//                            val name = declaration.name ?: ""
-//                            val text = declaration.text ?: ""
-//
-//                            val public = declaration.isPublic
-//
-//                            val declarationType: DeclarationType =
-//                                when (declaration) {
-//                                    is KtClass -> DeclarationType.CLASS
-//                                    is KtNamedFunction -> DeclarationType.NAMED_FUNCTION
-//                                    is KtProperty -> DeclarationType.PROPERTY
-//                                    is KtObjectDeclaration -> DeclarationType.OBJECT
-//                                    is KtTypeAlias -> DeclarationType.CLASS
-//                                    else -> return//DeclarationType.UNRESOLVED
-//                                }
-//
-//                            val itemCoordinates =  ItemCoordinates(path, declaration.textOffset, text)
-//                            val itemInfo = ItemMetaInfo(name, declarationType)
-//
-//                            metaInfoSet.add(itemInfo)
-//                            if (sharedType == SharedType.EXPECTED) {
-//                                expectedCoordinatesMap[itemInfo] = itemCoordinates
-//                            } else if (sharedType == SharedType.ACTUAL) {
-//                                val key = actualCoordinatesMap.keys.findLast {
-//                                    it == itemInfo
-//                                }
-//                                if (actualCoordinatesMap[itemInfo] != null) {
-//                                    (actualCoordinatesMap[itemInfo])?.add(itemCoordinates)
-//                                } else {
-//                                    (actualCoordinatesMap[itemInfo]) = mutableSetOf(itemCoordinates)
-//                                }
-//                            }
+                            val expected = declaration.isExpectDeclaration()
+                            val actual = declaration.isEffectivelyActual()
+
+                            val sharedType: SharedType =
+                                when {
+                                    (expected) -> SharedType.EXPECTED
+                                    (actual) -> SharedType.ACTUAL
+                                    else -> return
+                                }
+
+                            // TODO: Handle emptiness
+                            val name = declaration.name ?: ""
+                            val text = declaration.text ?: ""
+
+                            val public = declaration.isPublic
+
+                            val declarationType: DeclarationType =
+                                when (declaration) {
+                                    is KtClass -> DeclarationType.CLASS
+                                    is KtNamedFunction -> DeclarationType.NAMED_FUNCTION
+                                    is KtProperty -> DeclarationType.PROPERTY
+                                    is KtObjectDeclaration -> DeclarationType.OBJECT
+                                    is KtTypeAlias -> DeclarationType.CLASS
+                                    else -> return//DeclarationType.UNRESOLVED
+                                }
+
+                            val itemCoordinates =  ItemCoordinates(path, declaration.textOffset, text)
+                            val itemInfo = ItemMetaInfo(name, declarationType)
+
+                            metaInfoSet.add(itemInfo)
+                            if (sharedType == SharedType.EXPECTED) {
+                                expectedCoordinatesMap[itemInfo] = itemCoordinates
+                            } else if (sharedType == SharedType.ACTUAL) {
+                                val key = actualCoordinatesMap.keys.findLast {
+                                    it == itemInfo
+                                }
+                                if (actualCoordinatesMap[itemInfo] != null) {
+                                    (actualCoordinatesMap[itemInfo])?.add(itemCoordinates)
+                                } else {
+                                    (actualCoordinatesMap[itemInfo]) = mutableSetOf(itemCoordinates)
+                                }
+                            }
 
                             super.visitNamedDeclaration(declaration)
                         }
