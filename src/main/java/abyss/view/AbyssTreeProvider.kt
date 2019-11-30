@@ -37,6 +37,13 @@ class AbyssTreeProvider {
         return rootNode
     }
 
+    private fun MutableTreeNode.including(nodes: Collection<MutableTreeNode>): MutableTreeNode {
+        nodes.reversed().forEach {
+            this.insert(it, 0)
+        }
+        return this
+    }
+
     private fun MutableTreeNode.including(vararg nodes: MutableTreeNode): MutableTreeNode {
         nodes.reversed().forEach {
             this.insert(it, 0)
