@@ -1,16 +1,13 @@
 package abyss.toolWindow
 
-import abyss.psi.SharedItemsProvider
-import abyss.view.AbyssTreeProvider
+import abyss.psi.SharedItemsStubsProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
-import com.intellij.ui.components.JBScrollPane
-import toolWindow.tree.TreeNodeContent
-import javax.swing.*
-import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.BoxLayout
+import javax.swing.ImageIcon
+import javax.swing.JPanel
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.TreeCellRenderer
-import javax.swing.tree.TreeSelectionModel
 
 class MppToolWindow (private val project: Project, private val toolWindow: ToolWindow) {
     val content: JPanel
@@ -30,27 +27,30 @@ class MppToolWindow (private val project: Project, private val toolWindow: ToolW
     }
 
     private fun createToolWindowTree() {
-        SharedItemsProvider().getSharedItems(project) { treeModel ->
-            val toolWindowTree = AbyssTreeProvider().tree(treeModel)
+        SharedItemsStubsProvider().getSharedItems(project){
 
-            toolWindowTree.run {
-                isRootVisible = false
-                selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-                cellRenderer = makeTreeCellRenderer()
-
-                addTreeSelectionListener { event ->
-                    val source = event.source as JTree
-                    val node = source.lastSelectedPathComponent as DefaultMutableTreeNode?
-                    val obj = node?.userObject as TreeNodeContent?
-                    obj?.action?.invoke()
-                }
-            }
-
-            val scrollPane = JBScrollPane(toolWindowTree)
-
-            scrollPane.border = BorderFactory.createEmptyBorder()
-            content.add(scrollPane)
         }
+//        SharedItemsProvider().getSharedItems(project) { treeModel ->
+//            val toolWindowTree = AbyssTreeProvider().tree(treeModel)
+//
+//            toolWindowTree.run {
+//                isRootVisible = false
+//                selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+//                cellRenderer = makeTreeCellRenderer()
+//
+//                addTreeSelectionListener { event ->
+//                    val source = event.source as JTree
+//                    val node = source.lastSelectedPathComponent as DefaultMutableTreeNode?
+//                    val obj = node?.userObject as TreeNodeContent?
+//                    obj?.action?.invoke()
+//                }
+//            }
+//
+//            val scrollPane = JBScrollPane(toolWindowTree)
+//
+//            scrollPane.border = BorderFactory.createEmptyBorder()
+//            content.add(scrollPane)
+//        }
         // TODO: use coroutines and for UI use an activity indicator.
     }
 
