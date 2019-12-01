@@ -1,9 +1,6 @@
 package abyss.applicationComponent
 
-import com.intellij.openapi.components.ApplicationComponent
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.ProjectComponent
-import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.components.*
 import com.intellij.openapi.project.ProjectManager
 
 
@@ -11,6 +8,7 @@ class ExperimentalApplicationComponent: ApplicationComponent {
 
 }
 
+@State(name = "abyss.applicationComponent.ExperimentalProjectService", storages = [Storage(value = "default.xml")])
 class ExperimentalProjectComponent: ProjectComponent, PersistentStateComponent<Int> {
     override fun loadState(state: Int) {
 
@@ -50,7 +48,7 @@ class ExperimentalProjectComponent: ProjectComponent, PersistentStateComponent<I
     }
 }
 
-
+@State(name = "abyss.applicationComponent.ExperimentalProjectService", storages = [Storage(value = "default.xml")])
 class ExperimentalProjectService: PersistentStateComponent<ExperimentalProjectService.State> {
     class State(var value: Int = 0)
 
