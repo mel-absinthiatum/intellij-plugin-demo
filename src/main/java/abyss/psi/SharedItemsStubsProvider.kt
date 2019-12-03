@@ -1,5 +1,11 @@
 package abyss.psi
 
+// TODO: PsiTreeUtil References and Resolve
+// TODO: An expected declaration in the common module and its actual counterparts always have exactly
+//  the same fully qualified name.
+// TODO: Use PSI Stubs
+// TODO: Aliases is used for classes, annotation classes, objects
+// TODO: Handle nested elements
 import abyss.model.*
 import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.project.Project
