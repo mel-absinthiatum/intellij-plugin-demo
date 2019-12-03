@@ -3,11 +3,12 @@ package abyss.applicationComponent
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.ProjectManager
 
-
-class ExperimentalApplicationComponent: ApplicationComponent {
+// Application level component.
+class ExperimentalApplicationComponent: BaseComponent {
 
 }
 
+// Project level component.
 @State(name = "abyss.applicationComponent.ExperimentalProjectService", storages = [Storage(value = "default.xml")])
 class ExperimentalProjectComponent: ProjectComponent, PersistentStateComponent<Int> {
     override fun loadState(state: Int) {
