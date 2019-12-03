@@ -1,21 +1,73 @@
 package actions.psi
 
 import abyss.model.*
+import com.intellij.ProjectTopics
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.project.ModuleListener
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.idea.actions.pathBeforeJ2K
+import org.jetbrains.kotlin.idea.caches.project.isMPPModule
+import org.jetbrains.kotlin.idea.caches.project.isNewMPPModule
+import org.jetbrains.kotlin.idea.project.platform
 import org.jetbrains.kotlin.idea.util.isEffectivelyActual
 import org.jetbrains.kotlin.idea.util.isExpectDeclaration
+import org.jetbrains.kotlin.idea.util.projectStructure.sdk
+import org.jetbrains.kotlin.platform.impl.CommonIdePlatformKind
+import org.jetbrains.kotlin.platform.impl.JvmIdePlatformKind
+import org.jetbrains.kotlin.platform.impl.NativeIdePlatformKind
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.isPublic
 
+
 class KotlinVisitorAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        retrieveExpectedElements(e)
+        retrieveModules(e)
+//        retrieveExpectedElements(e)
+
+    }
+
+
+    private fun retrieveModules(e: AnActionEvent) {
+        val project = e.project
+        if (project != null) {
+            project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, object : ModuleListener {
+                fun moduleAdded(project: Project, module: Module) {
+                    // TODO: Handle module routines.
+                }
+            })
+
+            val modules = ModuleManager.getInstance(project).modules
+            modules.filter{ it.isMPPModule }.forEach { module ->
+                if (module.isMPPModule == true) {
+                    println()
+                    println("module path: ${module.moduleFilePath}")
+                    println("module name ${module.name}")
+                    println("module type: ${module.moduleTypeName}")
+                    println("module type MPP: ${module.isNewMPPModule}")
+                    println("module sdk: ${module.sdk}")
+                    println("platform ${module.platform}")
+
+                    val platformKind = module.platform?.kind
+                    println("platform native: ${platformKind == NativeIdePlatformKind}")
+                    println("platform common ${platformKind == CommonIdePlatformKind}")
+                    println("platform jvm ${platformKind == JvmIdePlatformKind}")
+
+                    if (platformKind == CommonIdePlatformKind) {
+                        val dependantModules = ModuleManager.getInstance(project).getModuleDependentModules(module)
+                        dependantModules.filter{ it.isMPPModule }.forEach {
+                            println(" ____ ${it.name}")
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
     private fun retrieveExpectedElements(e: AnActionEvent) {
