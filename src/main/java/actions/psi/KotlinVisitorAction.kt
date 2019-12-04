@@ -1,7 +1,6 @@
 package actions.psi
 
 import abyss.model.*
-import abyss.modulesRoutines.MppAuthorityManager
 import com.intellij.ProjectTopics
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -28,27 +27,14 @@ import org.jetbrains.kotlin.psi.psiUtil.isPublic
 
 class KotlinVisitorAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
-//        retrieveModules(e)
-
-        val project = e.project
-        if (project != null) {
-            retrieveStubs(project)
-        }
+        retrieveExpectedElements(e)
+//        val project = e.project
+//        if (project != null) {
+//
+//        }
     }
 
-    private fun retrieveStubs(project: Project) {
-        val mppAuthorityZones = MppAuthorityManager().provideAuthorityZonesForProject(project)
 
-        mppAuthorityZones.forEach { authorityZone ->
-            val commonModule = authorityZone.commonModule
-            println("Authority zone root name: ${commonModule.name}")
-            val commonModulePath = commonModule.moduleFilePath
-            val commonModuleVF = commonModule.moduleFile
-            val commonModuleScope = commonModule.moduleScope
-
-        }
-
-    }
 
     private fun retrieveModules(e: AnActionEvent) {
         val project = e.project
@@ -109,6 +95,7 @@ class KotlinVisitorAction : AnAction() {
                 if (psiF != null && psiF.fileType.name == "Kotlin") {
                     psiF.acceptChildren(object : KtTreeVisitorVoid() {
                         override fun visitNamedDeclaration(declaration: KtNamedDeclaration) {
+                            println("visit $psiF")
                             val expected = declaration.isExpectDeclaration()
                             val actual = declaration.isEffectivelyActual()
 

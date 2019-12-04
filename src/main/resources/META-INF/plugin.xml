@@ -39,6 +39,9 @@
                     factoryClass="toolWindow.DemoToolWindowFactory"/>
         <toolWindow id="MPP Demo" secondary="false" icon="/toolWindowResources/plus.svg" anchor="right"
                     factoryClass="abyss.toolWindow.MppToolWindowFactory"/>
+
+
+        <gotoRelatedProvider implementation="org.jetbrains.kotlin.idea.goto.KotlinExpectOrActualGotoRelatedProvider"/>
     </extensions>
 
     <actions>
@@ -109,6 +112,13 @@
                 class="actions.psi.KotlinVisitorAction"
                 text="Kotlin Visitor"
                 description="Visit Kotlin files content.">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+
+        <action id="PSI.StubVisitorAction"
+                class="actions.psi.StubVisitorAction"
+                text="Stub Visitor"
+                description="Visit Kotlin files stubs.">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
 
