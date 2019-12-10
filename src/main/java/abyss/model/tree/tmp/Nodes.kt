@@ -1,6 +1,7 @@
 package abyss.model.tree.tmp
 
 import abyss.model.SharedType
+import abyss.model.tree.nodes.toEnumeration
 import com.intellij.psi.stubs.Stub
 import java.net.URL
 import java.util.*
@@ -52,23 +53,26 @@ class Node(
 
 }
 
+interface ElementModelInterface
+
+
+interface ExpectOrActualModelInterface: ElementModelInterface {
+    val type: SharedType
+    val stub: Stub?
+}
+
 data class ExpectOrActualModel(
     override val type: SharedType,
     override val stub: Stub?
 ) : ExpectOrActualModelInterface
 
-interface  ExpectOrActualModelInterface {
-    val type: SharedType
-    val stub: Stub?
-}
-
 class ExpectOrActualNode(
-    val model: ExpectOrActualModel,
-    val sharedChildren: Array<ExpectOrActualModel>,
+    val model: ExpectOrActualModelInterface,
+    val sharedChildren: Array<ExpectOrActualModelInterface>,
     val nodeParent: TreeNode?
 ): NodeInterface {
 
-    constructor(model: ExpectOrActualModel, parent: TreeNode) : this(model, arrayOf(), parent)
+    constructor(model: ExpectOrActualModelInterface, parent: TreeNode) : this(model, arrayOf(), parent)
 //    constructor(sharedChildren: Array<ExpectOrActualModel>) : this(null, sharedChildren, null)
 
     override fun children(): Enumeration<NodeInterface> { return emptyEnumeration() }
@@ -100,7 +104,7 @@ class ExpectOrActualNode(
     }
 }
 
-interface SharedElementModelInterface {
+interface SharedElementModelInterface: ElementModelInterface {
     val type: SharedType
     val stub: Stub?
 }
@@ -110,53 +114,62 @@ data class SharedElementModel(
     override val stub: Stub?
 ): SharedElementModelInterface
 
-class SharedElementNode<T> (
-    val model: SharedElementModel,
-    val sharedChildren: Array<in T>,
-    val nodeParent: TreeNode?
-): NodeInterface where T : SharedElementModelInterface, T : ExpectOrActualModelInterface {
+//class SharedElementNode<out T> (
+//    val model: T,
+//    val sharedChildren: Array<T>,
+//    val nodeParent: TreeNode?
+//): abyss.model.tree.nodes.NodeInterface where T: abyss.model.tree.nodes.SharedElementModelInterface, T: abyss.model.tree.nodes.ExpectOrActualModelInterface {
+//
+//    constructor(model: abyss.model.tree.nodes.SharedElementModelInterface, parent: TreeNode) : this(model, arrayOf<T>(), parent)
+////    constructor(sharedChildren: Array<ExpectOrActualModel>) : this(null, sharedChildren, null)
+//
+//    init {
+//        // TODO: Sort
+////        children.sortWith(compareBy { it.name.toLowerCase() })
+//    }
+//
+//    override fun children(): Enumeration<abyss.model.tree.nodes.NodeInterface> { return sharedChildren.mapNotNull { model ->
+//        // TODO
+//        when (model) {
+//            is abyss.model.tree.nodes.SharedElementModelInterface -> { SharedElementNode(model, this) }
+//            is abyss.model.tree.nodes.ExpectOrActualModelInterface -> { ExpectOrActualNode(model, this) }
+//        }
+//        null
+////        ExpectOrActualNode(it, this)
+//    }.toEnumeration()}
+//
+//    override fun isLeaf(): Boolean {
+//        return childCount == 0
+//    }
+//
+//    override fun getChildCount(): Int {
+//        return sharedChildren.size
+//    }
+//
+//    override fun getParent(): TreeNode? {
+//        return this.nodeParent
+//    }
+//
+//    override fun getChildAt(childIndex: Int): TreeNode? {
+//        val model = sharedChildren[childIndex]
+//        when (model) {
+//            is abyss.model.tree.nodes.SharedElementModelInterface -> { return null }
+//            is abyss.model.tree.nodes.ExpectOrActualModelInterface -> { return null }
+//        }
+//        return null
+////        return ExpectOrActualNode(sharedChildren[childIndex], this)
+//    }
+//
+//    override fun getIndex(node: TreeNode?): Int {
+//        val n = node as ExpectOrActualNode
+//        return sharedChildren.indexOfFirst { it == n.model }
+//    }
+//
+//    override fun getAllowsChildren(): Boolean {
+//        return true
+//    }
+//}
 
-    constructor(model: SharedElementModel, parent: TreeNode) : this(model, arrayOf<T>(), parent)
-//    constructor(sharedChildren: Array<ExpectOrActualModel>) : this(null, sharedChildren, null)
-
-    init {
-        // TODO: Sort
-//        children.sortWith(compareBy { it.name.toLowerCase() })
-    }
-
-    override fun children(): Enumeration<NodeInterface> { return sharedChildren.map { ExpectOrActualNode(it, this) }.toEnumeration()}
-
-    override fun isLeaf(): Boolean {
-        return childCount == 0
-    }
-
-    override fun getChildCount(): Int {
-        return sharedChildren.size
-    }
-
-    override fun getParent(): TreeNode? {
-        return this.nodeParent
-    }
-
-    override fun getChildAt(childIndex: Int): TreeNode? {
-        val model = sharedChildren[childIndex]
-        when (model) {
-            is SharedElementModelInterface -> { return null }
-            is ExpectOrActualModelInterface -> { return null }
-        }
-        return null
-//        return ExpectOrActualNode(sharedChildren[childIndex], this)
-    }
-
-    override fun getIndex(node: TreeNode?): Int {
-        val n = node as ExpectOrActualNode
-        return sharedChildren.indexOfFirst { it == n.model }
-    }
-
-    override fun getAllowsChildren(): Boolean {
-        return true
-    }
-}
 
 
 //data class FileTreeNode(val file: File?, val children: Array<File>, val nodeParent: TreeNode?) : TreeNode {

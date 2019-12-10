@@ -6,6 +6,8 @@ import java.net.URL
 import java.util.*
 import javax.swing.tree.TreeNode
 
+
+
 interface SharedStubModelInterface {
     val stub: Stub
     val sharedChildren: Collection<SharedStubModelInterface>
@@ -52,19 +54,21 @@ class Node(
 
 }
 
-data class ExpectOrActualModel(
-    val type: SharedType,
+
+interface ExpectOrActualModelInterface: ElementContainable {
+    val type: SharedType
     val stub: Stub?
-)
+}
+
+data class ExpectOrActualModel(
+    override val type: SharedType,
+    override val stub: Stub?
+) : ExpectOrActualModelInterface
 
 class ExpectOrActualNode(
-    val model: ExpectOrActualModel,
-    val sharedChildren: Array<ExpectOrActualModel>,
+    val model: ExpectOrActualModelInterface,
     val nodeParent: TreeNode?
 ): NodeInterface {
-
-    constructor(model: ExpectOrActualModel, parent: TreeNode) : this(model, arrayOf(), parent)
-//    constructor(sharedChildren: Array<ExpectOrActualModel>) : this(null, sharedChildren, null)
 
     override fun children(): Enumeration<NodeInterface> { return emptyEnumeration() }
 
@@ -95,21 +99,42 @@ class ExpectOrActualNode(
     }
 }
 
-data class SharedElementModel(
-    val type: SharedType,
-    val stub: Stub?
-)
+interface ElementContainable
 
-class SharedElementNode(
-    val model: SharedElementModel,
-    val sharedChildren: Array<ExpectOrActualModel>,
+interface SharedElementModelInterface: ElementContainable, PackageContainable {
+    val type: SharedType
+    val stub: Stub?
+}
+
+data class SharedElementModel(
+    override val type: SharedType,
+    override val stub: Stub?
+): SharedElementModelInterface
+
+// TODO: notnull parent and model
+class SharedElementNode (
+    val model: ElementContainable,
+    val sharedChildren: Array<ElementContainable>,
     val nodeParent: TreeNode?
 ): NodeInterface {
 
-    constructor(model: SharedElementModel, parent: TreeNode) : this(model, arrayOf(), parent)
+    constructor(model: ElementContainable, parent: TreeNode) : this(model, arrayOf<ElementContainable>(), parent)
 //    constructor(sharedChildren: Array<ExpectOrActualModel>) : this(null, sharedChildren, null)
 
-    override fun children(): Enumeration<NodeInterface> { return sharedChildren.map { ExpectOrActualNode(it, this) }.toEnumeration()}
+    init {
+        // TODO: Sort
+//        children.sortWith(compareBy { it.name.toLowerCase() })
+    }
+
+    override fun children(): Enumeration<NodeInterface> { return sharedChildren.mapNotNull { model ->
+        // TODO
+        when (model) {
+            is SharedElementModelInterface -> { SharedElementNode(model, this) }
+            is ExpectOrActualModelInterface -> { ExpectOrActualNode(model, this) }
+        }
+        null
+//        ExpectOrActualNode(it, this)
+    }.toEnumeration()}
 
     override fun isLeaf(): Boolean {
         return childCount == 0
@@ -124,7 +149,12 @@ class SharedElementNode(
     }
 
     override fun getChildAt(childIndex: Int): TreeNode? {
-        return ExpectOrActualNode(sharedChildren[childIndex], this)
+        val model = sharedChildren[childIndex]
+        when (model) {
+            is SharedElementModelInterface -> { SharedElementNode(model, this) }
+            is ExpectOrActualModelInterface -> { ExpectOrActualNode(model, this) }
+        }
+        return null
     }
 
     override fun getIndex(node: TreeNode?): Int {
@@ -135,7 +165,6 @@ class SharedElementNode(
     override fun getAllowsChildren(): Boolean {
         return true
     }
-
 }
 
 
