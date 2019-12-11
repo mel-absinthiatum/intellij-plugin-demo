@@ -27,9 +27,13 @@ package actions.psi
 
 
 import abyss.model.DeclarationType
+import abyss.model.SharedType
+import abyss.model.tree.nodes.ExpectOrActualModel
+import abyss.model.tree.nodes.ExpectOrActualNode
 import abyss.modulesRoutines.MppAuthorityManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.DumbServiceImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
@@ -39,6 +43,9 @@ import org.jetbrains.kotlin.idea.util.actualsForExpected
 import org.jetbrains.kotlin.idea.util.isExpectDeclaration
 import org.jetbrains.kotlin.idea.util.sourceRoots
 import org.jetbrains.kotlin.psi.*
+import javax.swing.tree.TreeNode
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class StubVisitorAction : AnAction() {
 
@@ -89,7 +96,7 @@ class StubVisitorAction : AnAction() {
                                         is KtAnnotation -> {
                                             val stub = declaration.stub
                                             val psi = stub?.psi
-
+                                            val a = declaration.actualsForExpected()
                                             DeclarationType.ANNOTATION
                                         }
                                         is KtClass -> {
@@ -130,7 +137,84 @@ class StubVisitorAction : AnAction() {
         }
 
     }
+
+
+
+    suspend fun registerDeclaration(declaration: KtNamedDeclaration, sharedType: SharedType, dumbService: DumbService): TreeNode?  =
+        suspendCoroutine { cont ->
+            dumbService.smartInvokeLater {
+                namedDeclarationVisitor { declaration ->
+                    when (declaration) {
+                        is KtAnnotation -> {
+                            cont.resume(registerAnnotation(declaration, sharedType))
+                        }
+                        is KtClass -> {
+                            cont.resume(registerClass(declaration, sharedType))
+                        }
+                        is KtNamedFunction -> {
+                            cont.resume(registerNamedFunction(declaration, sharedType))
+                        }
+                        is KtProperty -> {
+                            cont.resume(registerProperty(declaration, sharedType))
+                        }
+                        is KtObjectDeclaration -> {
+                            cont.resume(registerObject(declaration, sharedType))
+                        }
+                        is KtTypeAlias -> {
+                            val stub = declaration.stub
+                            DeclarationType.CLASS
+                            cont.resume(null)
+
+                        }
+                        else -> cont.resume(null) //DeclarationType.UNRESOLVED
+                    }
+                }
+            }
+        }
+
+
+
+
+
+    private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): TreeNode {
+        val stub = annotation.stub
+        // TODO
+//        val a = annotation.actualsForExpected()
+        val model = ExpectOrActualModel(sharedType, stub)
+        return ExpectOrActualNode(model, null)
+    }
+
+    private fun registerProperty(property: KtProperty, sharedType: SharedType): TreeNode {
+        val stub = property.stub
+        val model = ExpectOrActualModel(sharedType, stub)
+        return ExpectOrActualNode(model, null)
+    }
+
+    private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): TreeNode {
+        val stub = function.stub
+        val model = ExpectOrActualModel(sharedType, stub)
+        return  ExpectOrActualNode(model, null)
+    }
+
+    private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): TreeNode {
+
+        val stub = classDeclaration.stub
+
+        val model = ExpectOrActualModel(sharedType, stub)
+        return  ExpectOrActualNode(model, null)
+
+
+    }
+
+    private fun registerObject(objectDeclaration: KtObjectDeclaration, sharedType: SharedType): TreeNode {
+        val stub = objectDeclaration.stub
+
+        val model = ExpectOrActualModel(sharedType, stub)
+        return ExpectOrActualNode(model, null)
+
+    }
 }
+
 
 
 /*

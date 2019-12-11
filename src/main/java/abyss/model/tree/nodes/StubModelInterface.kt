@@ -18,7 +18,7 @@ interface NodeInterface: TreeNode
 
 class Node(
     val title: String,
-    val sharedChildren: Array<String>,
+    var sharedChildren: Array<String>,
     val nodeParent: TreeNode?
 ): NodeInterface  {
 
@@ -114,7 +114,7 @@ data class SharedElementModel(
 // TODO: notnull parent and model
 class SharedElementNode (
     val model: ElementContainable,
-    val sharedChildren: Array<ElementContainable>,
+    var sharedChildren: Array<ElementContainable>,
     val nodeParent: TreeNode?
 ): NodeInterface {
 

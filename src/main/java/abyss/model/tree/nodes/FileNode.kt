@@ -2,9 +2,10 @@ package abyss.model.tree.nodes
 
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.*
+import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 
-
+// TODO: unify initialization
 interface PackageContainable
 
 
@@ -26,6 +27,10 @@ class PackageNode (
     val sharedChildren: Array<PackageContainable>,
     val nodeParent: TreeNode?
 ): NodeInterface {
+
+    fun insertChild(child: PackageContainable) {
+        // TODO: Implement as well as other mutating methods
+    }
 
     constructor(model: PackageContainable, parent: TreeNode) : this(model, arrayOf<PackageContainable>(), parent)
     init {
@@ -70,4 +75,64 @@ class PackageNode (
     override fun getAllowsChildren(): Boolean {
         return true
     }
+}
+
+
+class MPackageNode(
+    val model: PackageContainable,
+    val sharedChildren: Array<PackageContainable>,
+    val nodeParent: TreeNode?
+): MutableTreeNode {
+    override fun children(): Enumeration<out TreeNode> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun insert(child: MutableTreeNode?, index: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setParent(newParent: MutableTreeNode?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getParent(): TreeNode {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getChildAt(childIndex: Int): TreeNode {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getIndex(node: TreeNode?): Int {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getAllowsChildren(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setUserObject(`object`: Any?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun remove(index: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun remove(node: MutableTreeNode?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isLeaf(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getChildCount(): Int {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun removeFromParent() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 }
