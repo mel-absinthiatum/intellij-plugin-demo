@@ -122,6 +122,12 @@
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
 
+        <action id="intellij-plugin-demo.actions.CoroutinesPlayAction"
+                class="actions.CoroutinesPlayAction"
+                text="Coroutines play"
+                description="Coroutines Play Action.">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
 
     </actions>
 
