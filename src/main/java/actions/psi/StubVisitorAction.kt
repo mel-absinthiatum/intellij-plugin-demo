@@ -40,11 +40,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.psi.stubs.StubIndex
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
+import org.jetbrains.kotlin.idea.stubindex.KotlinFullClassNameIndex
 import org.jetbrains.kotlin.idea.util.actualsForExpected
 import org.jetbrains.kotlin.idea.util.isExpectDeclaration
 import org.jetbrains.kotlin.idea.util.sourceRoots
@@ -53,7 +56,6 @@ import javax.swing.tree.TreeNode
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-//import kotlinx.coroutines.CommonPool
 
 class StubVisitorAction : AnAction() {
 
@@ -61,13 +63,20 @@ class StubVisitorAction : AnAction() {
         val project = e.project
         if (project != null) {
             println("action")
+            runBlocking {
+                launch {
 
-//            retrieveStubs(project)
-            registerTree(project)
-//            println("exit")
+                    println("launch1")
+
+                    iterateAllZones(project)
+
+                    println("launch2")
+
+                }
+                println("launched")
+            }
+            println("block off")
         }
-
-
     }
 
     private fun registerTree(project: Project) {
@@ -75,11 +84,6 @@ class StubVisitorAction : AnAction() {
 
         mppAuthorityZones.forEach { authorityZone ->
             val commonModule = authorityZone.commonModule
-            println("Authority zone root name: ${commonModule.name}")
-            val commonModulePath = commonModule.moduleFilePath
-            val commonModuleVF = commonModule.moduleFile
-            val commonModuleScope = commonModule.moduleScope
-
             val sourceRoots = commonModule.sourceRoots
             runBlocking() {
             sourceRoots.forEach { vf ->
@@ -91,7 +95,6 @@ class StubVisitorAction : AnAction() {
                     launch() {
 
                         println(" launch")
-//coroutineTest()
                         if (psiFile != null) {
                             registerDeclaration(psiFile, SharedType.EXPECTED, DumbServiceImpl.getInstance(project))
                         }
@@ -109,14 +112,116 @@ class StubVisitorAction : AnAction() {
         }
     }
 
-    private suspend fun iterateTree(authorityZone: MppAuthorityZone): Flow<TreeNode> = flow {
-        val sourceRoots = authorityZone.commonModule.sourceRoots
-        sourceRoots.forEach { vf ->
-            VfsUtilCore.iterateChildrenRecursively(vf, null, { virtualFile ->
-
-            })
+    private suspend fun iterateAllZones(project: Project) {
+        val mppAuthorityZones = MppAuthorityManager().provideAuthorityZonesForProject(project)
+        mppAuthorityZones.forEach { authorityZone ->
+            val flow = iterateTree(authorityZone, project)
+            flow.collect {
+                println("collected: $it")
+            }
         }
     }
+
+    private suspend fun iterateTree(authorityZone: MppAuthorityZone, project: Project): Flow<TreeNode?> = flow {
+        val sourceRoots = authorityZone.commonModule.sourceRoots
+
+        val psiFiles = mutableListOf<PsiFile>()
+        sourceRoots.forEach { vf ->
+            VfsUtilCore.iterateChildrenRecursively(vf, null, { virtualFile ->
+                val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
+                if (psiFile != null) {
+                    psiFiles.add(psiFile)
+                }
+                true
+            })
+        }
+
+        psiFiles.forEach { emit(registerDeclaration(it, SharedType.EXPECTED, DumbServiceImpl.getInstance(project))) }
+    }
+
+    private fun indexes(project: Project) {
+        val key = KotlinFullClassNameIndex.getInstance().key
+        val valNames = StubIndex.getInstance().getAllKeys(key, project)
+        valNames.forEach { println("index $it") }
+    }
+
+    private suspend fun registerDeclaration(element: PsiFile, sharedType: SharedType, dumbService: DumbService): TreeNode?  =
+        suspendCoroutine { cont ->
+            dumbService.smartInvokeLater {
+                element.acceptChildren(
+                    namedDeclarationVisitor { declaration ->
+                        when (declaration) {
+                            is KtAnnotation -> {
+                                cont.resume(registerAnnotation(declaration, sharedType))
+                            }
+                            is KtClass -> {
+                                cont.resume(registerClass(declaration, sharedType))
+                            }
+                            is KtNamedFunction -> {
+                                cont.resume(registerNamedFunction(declaration, sharedType))
+                            }
+                            is KtProperty -> {
+                                cont.resume(registerProperty(declaration, sharedType))
+                            }
+                            is KtObjectDeclaration -> {
+                                cont.resume(registerObject(declaration, sharedType))
+                            }
+                            is KtTypeAlias -> {
+                                val stub = declaration.stub
+                                DeclarationType.CLASS
+                                cont.resume(null)
+
+                            }
+                            else -> cont.resume(null) //DeclarationType.UNRESOLVED
+                        }
+                    }
+                )
+            }
+        }
+
+
+    private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): TreeNode {
+        val stub = annotation.stub
+        val model = ExpectOrActualModel(sharedType, stub)
+        println(annotation.name)
+        return ExpectOrActualNode(model, null)
+    }
+
+    private fun registerProperty(property: KtProperty, sharedType: SharedType): TreeNode {
+        val stub = property.stub
+        val model = ExpectOrActualModel(sharedType, stub)
+        println(property.name)
+
+        return ExpectOrActualNode(model, null)
+    }
+
+    private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): TreeNode {
+        val stub = function.stub
+        val model = ExpectOrActualModel(sharedType, stub)
+        return  ExpectOrActualNode(model, null)
+    }
+
+    private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): TreeNode {
+        val stub = classDeclaration.stub
+
+        val model = ExpectOrActualModel(sharedType, stub)
+        println(classDeclaration.name)
+
+        return  ExpectOrActualNode(model, null)
+
+    }
+
+    private fun registerObject(objectDeclaration: KtObjectDeclaration, sharedType: SharedType): TreeNode {
+        val stub = objectDeclaration.stub
+
+        val model = ExpectOrActualModel(sharedType, stub)
+        return ExpectOrActualNode(model, null)
+
+    }
+
+
+
+    ////////////////////// Garbage
 
 
     private fun retrieveStubs(project: Project) {
@@ -201,89 +306,6 @@ class StubVisitorAction : AnAction() {
 
     }
 
-
-
-
-    private suspend fun registerDeclaration(element: PsiFile, sharedType: SharedType, dumbService: DumbService): TreeNode?  =
-        suspendCoroutine { cont ->
-            dumbService.smartInvokeLater {
-                element.acceptChildren(
-                    namedDeclarationVisitor { declaration ->
-                        when (declaration) {
-                            is KtAnnotation -> {
-                                cont.resume(registerAnnotation(declaration, sharedType))
-                            }
-                            is KtClass -> {
-                                cont.resume(registerClass(declaration, sharedType))
-                            }
-                            is KtNamedFunction -> {
-                                cont.resume(registerNamedFunction(declaration, sharedType))
-                            }
-                            is KtProperty -> {
-                                cont.resume(registerProperty(declaration, sharedType))
-                            }
-                            is KtObjectDeclaration -> {
-                                cont.resume(registerObject(declaration, sharedType))
-                            }
-                            is KtTypeAlias -> {
-                                val stub = declaration.stub
-                                DeclarationType.CLASS
-                                cont.resume(null)
-
-                            }
-                            else -> cont.resume(null) //DeclarationType.UNRESOLVED
-                        }
-                    }
-                )
-            }
-        }
-
-
-
-
-
-    private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): TreeNode {
-        val stub = annotation.stub
-        // TODO
-//        val a = annotation.actualsForExpected()
-        val model = ExpectOrActualModel(sharedType, stub)
-        println(annotation.name)
-        return ExpectOrActualNode(model, null)
-    }
-
-    private fun registerProperty(property: KtProperty, sharedType: SharedType): TreeNode {
-        val stub = property.stub
-        val model = ExpectOrActualModel(sharedType, stub)
-        println(property.name)
-
-        return ExpectOrActualNode(model, null)
-    }
-
-    private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): TreeNode {
-        val stub = function.stub
-        val model = ExpectOrActualModel(sharedType, stub)
-        return  ExpectOrActualNode(model, null)
-    }
-
-    private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): TreeNode {
-
-        val stub = classDeclaration.stub
-
-        val model = ExpectOrActualModel(sharedType, stub)
-        println(classDeclaration.name)
-
-        return  ExpectOrActualNode(model, null)
-
-
-    }
-
-    private fun registerObject(objectDeclaration: KtObjectDeclaration, sharedType: SharedType): TreeNode {
-        val stub = objectDeclaration.stub
-
-        val model = ExpectOrActualModel(sharedType, stub)
-        return ExpectOrActualNode(model, null)
-
-    }
 }
 
 
