@@ -42,6 +42,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.stubs.StubIndex
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -178,6 +179,47 @@ class StubVisitorAction : AnAction() {
                 )
             }
         }
+
+    private suspend fun registerDeclaration5(
+        element: PsiFile,
+        sharedType: SharedType,
+        dumbService: DumbService
+    ): Flow<TreeNode?> = channelFlow {
+
+        dumbService.smartInvokeLater {
+            element.acceptChildren(
+                namedDeclarationVisitor { declaration ->
+                    launch {
+
+                        when (declaration) {
+                            is KtAnnotation -> {
+                                send(registerAnnotation(declaration, sharedType))
+
+                            }
+                            is KtClass -> {
+                                send(registerClass(declaration, sharedType))
+                            }
+                            is KtNamedFunction -> {
+                                send(registerNamedFunction(declaration, sharedType))
+                            }
+                            is KtProperty -> {
+                                send(registerProperty(declaration, sharedType))
+                            }
+                            is KtObjectDeclaration -> {
+                                send(registerObject(declaration, sharedType))
+                            }
+                            is KtTypeAlias -> {
+                                val stub = declaration.stub
+                                DeclarationType.CLASS
+                                send(null)
+
+                            }
+                            else -> send(null)
+                        }
+                    }
+                })
+        }
+    }
 
 
     private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): TreeNode {
