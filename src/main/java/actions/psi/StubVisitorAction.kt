@@ -41,10 +41,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.stubs.StubIndex
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
@@ -118,12 +115,15 @@ class StubVisitorAction : AnAction() {
         mppAuthorityZones.forEach { authorityZone ->
             val flow = iterateTree(authorityZone, project)
             flow.collect {
+                if (it is ExpectOrActualNode) {
+                    println("__ collected ${it.model.stub}")
+                }
                 println("collected: $it")
             }
         }
     }
 
-    private suspend fun iterateTree(authorityZone: MppAuthorityZone, project: Project): Flow<TreeNode?> = flow {
+    private suspend fun iterateTree(authorityZone: MppAuthorityZone, project: Project): Flow<TreeNode?> {
         val sourceRoots = authorityZone.commonModule.sourceRoots
 
         val psiFiles = mutableListOf<PsiFile>()
@@ -137,7 +137,13 @@ class StubVisitorAction : AnAction() {
             })
         }
 
-        psiFiles.forEach { emit(registerDeclaration(it, SharedType.EXPECTED, DumbServiceImpl.getInstance(project))) }
+        val dumbService = DumbServiceImpl.getInstance(project)
+
+        val flows = psiFiles.map { psiFile ->
+            registerDeclaration(psiFile, SharedType.EXPECTED, dumbService)
+        }.toTypedArray()
+        val flattenFlows = flowOf(*flows).flattenMerge()
+        return flattenFlows
     }
 
     private fun indexes(project: Project) {
@@ -146,8 +152,9 @@ class StubVisitorAction : AnAction() {
         valNames.forEach { println("index $it") }
     }
 
-    private suspend fun registerDeclaration(element: PsiFile, sharedType: SharedType, dumbService: DumbService): TreeNode?  =
+    private suspend fun registerDeclaration1(element: PsiFile, sharedType: SharedType, dumbService: DumbService): TreeNode? =
         suspendCoroutine { cont ->
+            println("register declaration method")
             dumbService.smartInvokeLater {
                 element.acceptChildren(
                     namedDeclarationVisitor { declaration ->
@@ -173,28 +180,29 @@ class StubVisitorAction : AnAction() {
                                 cont.resume(null)
 
                             }
-                            else -> cont.resume(null) //DeclarationType.UNRESOLVED
+                            else -> cont.resume(null)
                         }
                     }
                 )
             }
         }
 
-    private suspend fun registerDeclaration5(
+    private suspend fun registerDeclaration(
         element: PsiFile,
         sharedType: SharedType,
         dumbService: DumbService
     ): Flow<TreeNode?> = channelFlow {
+        println("register declaration method")
 
-        dumbService.smartInvokeLater {
+//        dumbService.smartInvokeLater {
             element.acceptChildren(
                 namedDeclarationVisitor { declaration ->
                     launch {
+                        println("register declaration method launch")
 
                         when (declaration) {
                             is KtAnnotation -> {
                                 send(registerAnnotation(declaration, sharedType))
-
                             }
                             is KtClass -> {
                                 send(registerClass(declaration, sharedType))
@@ -210,15 +218,13 @@ class StubVisitorAction : AnAction() {
                             }
                             is KtTypeAlias -> {
                                 val stub = declaration.stub
-                                DeclarationType.CLASS
                                 send(null)
-
                             }
                             else -> send(null)
                         }
                     }
                 })
-        }
+//        }
     }
 
 
