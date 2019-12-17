@@ -67,7 +67,7 @@ data class ExpectOrActualModel(
 
 class ExpectOrActualNode(
     val model: ExpectOrActualModelInterface,
-    val nodeParent: TreeNode?
+    var nodeParent: TreeNode?
 ): NodeInterface {
 
     override fun children(): Enumeration<NodeInterface> { return emptyEnumeration() }
@@ -102,23 +102,29 @@ class ExpectOrActualNode(
 interface ElementContainable
 
 interface SharedElementModelInterface: ElementContainable, PackageContainable {
+    val name: String?
     val type: SharedType
     val stub: Stub?
 }
 
 data class SharedElementModel(
+    override val name: String?,
     override val type: SharedType,
     override val stub: Stub?
 ): SharedElementModelInterface
 
 // TODO: notnull parent and model
 class SharedElementNode (
-    val model: ElementContainable,
+    val model: SharedElementModelInterface,
     var sharedChildren: Array<ElementContainable>,
-    val nodeParent: TreeNode?
+    var nodeParent: TreeNode?
 ): NodeInterface {
 
-    constructor(model: ElementContainable, parent: TreeNode) : this(model, arrayOf<ElementContainable>(), parent)
+    // TODO: Kotlin readonly public properties
+    private val nestedElementsNodes = mutableListOf<SharedElementNode>()
+    private val expectOrActualNodes = mutableListOf<ExpectOrActualNode>()
+
+    constructor(model: SharedElementModelInterface, parent: TreeNode?) : this(model, arrayOf<ElementContainable>(), parent)
 //    constructor(sharedChildren: Array<ExpectOrActualModel>) : this(null, sharedChildren, null)
 
     init {
@@ -126,22 +132,53 @@ class SharedElementNode (
 //        children.sortWith(compareBy { it.name.toLowerCase() })
     }
 
-    override fun children(): Enumeration<NodeInterface> { return sharedChildren.mapNotNull { model ->
-        // TODO
-        when (model) {
-            is SharedElementModelInterface -> { SharedElementNode(model, this) }
-            is ExpectOrActualModelInterface -> { ExpectOrActualNode(model, this) }
-        }
-        null
-//        ExpectOrActualNode(it, this)
-    }.toEnumeration()}
+    fun addChild(model: SharedElementModelInterface) {
+        val node = SharedElementNode(model, this)
+        nestedElementsNodes.add(node)
+    }
+
+    fun addChild(model: ExpectOrActualModelInterface) {
+        val node = ExpectOrActualNode(model, this)
+        expectOrActualNodes.add(node)
+    }
+
+    fun addChildNode(node: SharedElementNode) {
+        node.nodeParent = this
+        nestedElementsNodes.add(node)
+    }
+
+    fun addChildNode(node: ExpectOrActualNode) {
+        node.nodeParent = this
+        expectOrActualNodes.add(node)
+    }
+
+
+//    }
+//    override fun children(): Enumeration<NodeInterface> {
+////    { return sharedChildren.mapNotNull { model ->
+////        // TODO
+////        when (model) {
+////            is SharedElementModelInterface -> { SharedElementNode(model, this) }
+////            is ExpectOrActualModelInterface -> { ExpectOrActualNode(model, this) }
+////        }
+////        null
+//////        ExpectOrActualNode(it, this)
+//    }
+
+    override fun children(): Enumeration<NodeInterface> {
+        val list: MutableList<NodeInterface> = nestedElementsNodes.toMutableList()
+        list.addAll(expectOrActualNodes)
+        return list.toEnumeration()
+    }
+
+
 
     override fun isLeaf(): Boolean {
         return childCount == 0
     }
 
     override fun getChildCount(): Int {
-        return sharedChildren.size
+        return nestedElementsNodes.size + expectOrActualNodes.size
     }
 
     override fun getParent(): TreeNode? {
@@ -149,17 +186,17 @@ class SharedElementNode (
     }
 
     override fun getChildAt(childIndex: Int): TreeNode? {
-        val model = sharedChildren[childIndex]
-        when (model) {
-            is SharedElementModelInterface -> { SharedElementNode(model, this) }
-            is ExpectOrActualModelInterface -> { ExpectOrActualNode(model, this) }
-        }
-        return null
+        val list: MutableList<NodeInterface> = nestedElementsNodes.toMutableList()
+        list.addAll(expectOrActualNodes)
+
+        return list[childIndex]
     }
 
     override fun getIndex(node: TreeNode?): Int {
-        val n = node as ExpectOrActualNode
-        return sharedChildren.indexOfFirst { it == n.model }
+        val list: MutableList<NodeInterface> = nestedElementsNodes.toMutableList()
+        list.addAll(expectOrActualNodes)
+
+        return list.indexOfFirst { it == node }
     }
 
     override fun getAllowsChildren(): Boolean {
