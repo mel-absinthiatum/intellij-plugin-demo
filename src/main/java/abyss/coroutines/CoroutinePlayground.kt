@@ -19,7 +19,7 @@ class CoroutinePlayground {
     }
 
     fun blockingRun() = runBlocking<Unit> {
-        launch() {
+        launch {
             val s = coroutineTest()
             println(s)
         }
@@ -32,7 +32,7 @@ class CoroutinePlayground {
     // }
 
     suspend fun blockingRun2() = coroutineScope {
-        launch() {
+        launch {
             val s = coroutineTest()
             println(s)
         }

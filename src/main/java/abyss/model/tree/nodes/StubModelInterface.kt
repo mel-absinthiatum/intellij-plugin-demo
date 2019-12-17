@@ -121,7 +121,7 @@ class SharedElementNode (
 ): NodeInterface {
 
     // TODO: Kotlin readonly public properties
-    private val nestedElementsNodes = mutableListOf<SharedElementNode>()
+    val nestedElementsNodes = mutableListOf<SharedElementNode>()
     private val expectOrActualNodes = mutableListOf<ExpectOrActualNode>()
 
     constructor(model: SharedElementModelInterface, parent: TreeNode?) : this(model, arrayOf<ElementContainable>(), parent)
@@ -150,6 +150,12 @@ class SharedElementNode (
     fun addChildNode(node: ExpectOrActualNode) {
         node.nodeParent = this
         expectOrActualNodes.add(node)
+    }
+
+    fun addChildren(nodes: Collection<SharedElementNode>) {
+        nodes.forEach {
+            addChildNode(it)
+        }
     }
 
 
@@ -203,6 +209,25 @@ class SharedElementNode (
         return true
     }
 }
+
+
+// TODO: Use light psi
+/*
+*
+            val lightElement: PsiElement? = when (declaration) {
+                is KtClassOrObject -> declaration.toLightClass()
+                is KtNamedFunction, is KtSecondaryConstructor -> LightClassUtil.getLightClassMethod(declaration as KtFunction)
+                is KtProperty, is KtParameter -> {
+                    if (declaration is KtParameter && !declaration.hasValOrVar()) return false
+                    // can't rely on light element, check annotation ourselves
+                    val entryPointsManager = EntryPointsManager.getInstance(declaration.project) as EntryPointsManagerBase
+                    return checkAnnotatedUsingPatterns(
+                        declaration,
+                        entryPointsManager.additionalAnnotations + entryPointsManager.ADDITIONAL_ANNOTATIONS
+                    )
+                }
+                else -> return false
+            }*/
 
 
 //data class FileTreeNode(val file: File?, val children: Array<File>, val nodeParent: TreeNode?) : TreeNode {
