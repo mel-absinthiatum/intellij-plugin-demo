@@ -29,31 +29,57 @@ class PlainStubVisitorAction : AnAction() {
         if (project != null) {
             DumbServiceImpl.getInstance(project).smartInvokeLater {
 
-                iterateAllZones(project)
+                val nodes = iterateAllZones(project)
 
+                nodes.forEach { mppAuthorityZoneNode ->
+                    println("authority zone : ${mppAuthorityZoneNode.model.title}")
+                    mppAuthorityZoneNode.children.forEach { fileNode ->
+                        println("_file node: ${fileNode.model.title}")
+
+                        fileNode.children.forEach { node ->
+                            println("__collected ${node.model.name}")
+
+                            node.children.forEach { child ->
+                                when (child) {
+                                    is SharedItemNode -> println("____collected: ${child.model.name}")
+                                    is ExpectOrActuaItemlNode -> println("_____expect or actual")
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    private fun iterateAllZones(project: Project) {
+    private fun iterateAllZones(project: Project): List<MppAuthorityZoneNode> {
         val mppAuthorityZones = MppAuthorityManager().provideAuthorityZonesForProject(project)
-        mppAuthorityZones.forEach { authorityZone ->
+        return mppAuthorityZones.mapNotNull { authorityZone ->
             val list = iterateTree(authorityZone, project)
-            list.forEach { fileNode ->
-                println("file node: ${fileNode.model.title}")
 
-                fileNode.children.forEach { node ->
-                    println("__collected ${node.model.name}")
-
-                    node.children.forEach { child ->
-                        when (child) {
-                            is SharedItemNode -> println("____collected: ${child.model.name}")
-                            is ExpectOrActuaItemlNode -> println("_____expect or actual")
-                        }
-                    }
-                }
-
+            if (list.isNotEmpty()) {
+                val mppNodeModel = MppAuthorityZoneModel(authorityZone.commonModule.name)
+                val node = MppAuthorityZoneNode(mppNodeModel)
+                node.addChildren(list)
+                node
+            } else {
+                null
             }
+//            list.forEach { fileNode ->
+//                println("file node: ${fileNode.model.title}")
+//
+//                fileNode.children.forEach { node ->
+//                    println("__collected ${node.model.name}")
+//
+//                    node.children.forEach { child ->
+//                        when (child) {
+//                            is SharedItemNode -> println("____collected: ${child.model.name}")
+//                            is ExpectOrActuaItemlNode -> println("_____expect or actual")
+//                        }
+//                    }
+//                }
+//
+//            }
         }
     }
 

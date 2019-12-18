@@ -26,12 +26,8 @@ class PackageNode (
     val children: MutableList<SharedItemNode>,
     override var nodeParent: NodeInterface?
 ): NodeInterface {
-
-    fun insertChild(child: PackageContainable) {
-        // TODO: Implement as well as other mutating methods
-    }
-
     constructor(model: PackageModel, parent: NodeInterface? = null) : this(model, mutableListOf<SharedItemNode>(), parent)
+
     init {
         // TODO: Sort
 //        children.sortWith(compareBy { it.name.toLowerCase() })
@@ -44,29 +40,19 @@ class PackageNode (
         }
     }
 
-    override fun children(): Enumeration<NodeInterface> = children.toEnumeration()
+    override fun children(): Enumeration<SharedItemNode> = children.toEnumeration()
 
-    override fun isLeaf(): Boolean {
-        return childCount == 0
-    }
+    override fun isLeaf(): Boolean = childCount == 0
 
-    override fun getChildCount(): Int {
-        return children.size
-    }
+    override fun getChildCount(): Int = children.size
 
-    override fun getParent(): TreeNode? {
-        return this.nodeParent
-    }
+    override fun getParent(): TreeNode? = nodeParent
 
     override fun getChildAt(childIndex: Int): TreeNode? = children[childIndex]
 
-    override fun getIndex(node: TreeNode?): Int {
-        return children.indexOfFirst { it == node }
-    }
+    override fun getIndex(node: TreeNode?): Int = children.indexOfFirst { it == node }
 
-    override fun getAllowsChildren(): Boolean {
-        return true
-    }
+    override fun getAllowsChildren(): Boolean = true
 }
 
 
@@ -147,37 +133,4 @@ class MPackageNode(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-}
-
-/**
- * Extension function for converting a {@link List} to an {@link Enumeration}
- */
-private fun <T> List<T>.toEnumeration(): Enumeration<T> {
-    return object : Enumeration<T> {
-        var count = 0
-
-        override fun hasMoreElements(): Boolean {
-            return this.count < size
-        }
-
-        override fun nextElement(): T {
-            if (this.count < size) {
-                return get(this.count++)
-            }
-            throw NoSuchElementException("List enumeration asked for more elements than present")
-        }
-    }
-}
-
-private fun <T> emptyEnumeration(): Enumeration<T> {
-    return object : Enumeration<T> {
-
-        override fun hasMoreElements(): Boolean {
-            return false
-        }
-
-        override fun nextElement(): T {
-            throw NoSuchElementException("Empty enumeration asked for an element")
-        }
-    }
 }
