@@ -81,11 +81,21 @@ class StubVisitorAction : AnAction() {
     private suspend fun iterateAllZones(project: Project) {
         val mppAuthorityZones = MppAuthorityManager().provideAuthorityZonesForProject(project)
         mppAuthorityZones.forEach { authorityZone ->
-            val flow = iterateTree(authorityZone, project)
-            flow.collect {
-                println("__ collected ${it?.model?.name}")
+            var flow: Flow<SharedElementNode?>? = null
+            runBlocking {
+
+                flow = iterateTree(authorityZone, project)
+                flow?.collect {
+                    println("collected ${it?.model?.name}")
+                    it?.sharedChildren?.forEach { nested ->
+                        println("__ ${nested}")
+                    }
+                }
+            }
+            flow?.collect {
+                println("2 collected ${it?.model?.name}")
                 it?.sharedChildren?.forEach { nested ->
-                    println("__ ${nested}")
+                    println("2 __ ${nested}")
                 }
             }
         }
@@ -124,12 +134,12 @@ class StubVisitorAction : AnAction() {
         element: PsiFile,
         sharedType: SharedType
     ): Flow<SharedElementNode?> = channelFlow {
-        println("register declaration method")
+//        println("register declaration method")
 
         element.acceptChildren(
             namedDeclarationVisitor { declaration ->
                 launch {
-                    println("register declaration method launch")
+//                    println("register declaration method launch")
 
                     when (declaration) {
                         is KtAnnotation -> {
@@ -162,12 +172,12 @@ class StubVisitorAction : AnAction() {
         element: PsiElement,
         sharedType: SharedType
     ): Flow<SharedElementNode?> = channelFlow {
-        println("register declaration method")
+//        println("register declaration method")
 
         element.acceptChildren(
             namedDeclarationVisitor { declaration ->
                 launch {
-                    println("register declaration method launch")
+//                    println("register declaration method launch")
 
                     when (declaration) {
                         is KtAnnotation -> send(registerAnnotation(declaration, sharedType))
@@ -183,6 +193,33 @@ class StubVisitorAction : AnAction() {
                     }
                 }
             })
+    }
+
+    private fun registerNestedDeclaration(
+        element: Array<PsiElement>,
+        sharedType: SharedType
+    ): Flow<SharedElementNode> = channelFlow {
+//        println("register nested declaration")
+        element.forEach {
+            it.accept(
+                namedDeclarationVisitor { declaration ->
+                    launch {
+
+                            when (declaration) {
+                                is KtAnnotation -> send(registerAnnotation(declaration, sharedType))
+                                is KtClass -> send(registerClass(declaration, sharedType))
+                                is KtNamedFunction -> send(registerNamedFunction(declaration, sharedType))
+                                is KtProperty -> send(registerProperty(declaration, sharedType))
+                                is KtObjectDeclaration -> send(registerObject(declaration, sharedType))
+                                is KtTypeAlias -> {
+                                    val stub = declaration.stub
+                                }
+                                else -> {}
+                            }
+
+                    }
+                })
+        }
     }
 
 //    private fun makeElementNode(declaration: PsiElement, sharedType: SharedType): TreeNode? {
@@ -203,49 +240,40 @@ class StubVisitorAction : AnAction() {
 
     private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): SharedElementNode {
         val stub = annotation.stub
-        if (stub == null) {
-            println("Achtung!!!")
-        }
         val model = SharedElementModel(annotation.name, sharedType, stub)
-        println(annotation.name)
+//        println(annotation.name)
         return SharedElementNode(model, null)
     }
 
     private fun registerProperty(property: KtProperty, sharedType: SharedType): SharedElementNode {
         val stub = property.stub
-        if (stub == null) {
-            println("Achtung!!!")
-        }
         val model = SharedElementModel(property.name, sharedType, stub)
-        println(property.name)
+//        println(property.name)
 
         return SharedElementNode(model, null)
     }
 
     private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): SharedElementNode {
         val stub = function.stub
-        if (stub == null) {
-            println("Achtung!!!")
-        }
         val model = SharedElementModel(function.name, sharedType, stub)
         return SharedElementNode(model, null)
     }
 
     private suspend fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedElementNode {
         val stub = classDeclaration.stub
-        if (stub == null) {
-            println("Achtung!!!")
-        }
         val model = SharedElementModel(classDeclaration.name, sharedType, stub)
-        println(classDeclaration.name)
+//        println(classDeclaration.name)
 
-
-        val childrenFlow = registerDeclaration1(classDeclaration, sharedType)
         val node = SharedElementNode(model, null)
-        childrenFlow.collect {
-            println("azis;jnedsin")
-            if (it is SharedElementNode) {
-                node.addChildNode(it)
+
+        val nested = classDeclaration.body?.children
+
+        runBlocking {
+            if (nested != null) {
+                val childrenFlow = registerNestedDeclaration(nested, sharedType)
+                childrenFlow.collect {
+                    node.addChildNode(it)
+                }
             }
         }
 
@@ -261,14 +289,15 @@ class StubVisitorAction : AnAction() {
         val model = SharedElementModel(objectDeclaration.name, sharedType, stub)
         val node = SharedElementNode(model, null)
 
-        val childrenFlow = registerDeclaration1(objectDeclaration, sharedType)
-        childrenFlow.collect {
-            println("azis;jnedsin")
+        val nested = objectDeclaration.body?.children
 
-            if (it is SharedElementNode) {
+        if (nested != null) {
+            val childrenFlow = registerNestedDeclaration(nested, sharedType)
+            childrenFlow.collect {
                 node.addChildNode(it)
             }
         }
+
 
         return node
     }

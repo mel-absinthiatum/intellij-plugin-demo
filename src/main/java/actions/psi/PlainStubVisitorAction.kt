@@ -102,6 +102,35 @@ class PlainStubVisitorAction : AnAction() {
         return list
     }
 
+    private fun registerDeclaration1(
+        element: Array<PsiElement>,
+        sharedType: SharedType
+    ): List<SharedElementNode> {
+        val list = mutableListOf<SharedElementNode>()
+        element.forEach {
+            it.accept(
+                namedDeclarationVisitor { declaration ->
+                    val node =
+                        when (declaration) {
+                            is KtAnnotation -> registerAnnotation(declaration, sharedType)
+                            is KtClass -> registerClass(declaration, sharedType)
+                            is KtNamedFunction -> registerNamedFunction(declaration, sharedType)
+                            is KtProperty -> registerProperty(declaration, sharedType)
+                            is KtObjectDeclaration -> registerObject(declaration, sharedType)
+                            is KtTypeAlias -> {
+                                val stub = declaration.stub
+                                null
+                            }
+                            else -> null
+                        }
+                    if (node != null) {
+                        list.add(node)
+                    }
+                })
+        }
+        return list
+    }
+
 
 //    private suspend fun registerDeclaration1(
 //        element: PsiElement,
@@ -186,9 +215,14 @@ class PlainStubVisitorAction : AnAction() {
 
         val node = SharedElementNode(model, null)
 
-        val children = registerDeclaration(classDeclaration, sharedType)
+        val nested = classDeclaration.body?.children
 
-        node.addChildren(children)
+        if (nested != null) {
+            val children = registerDeclaration1(nested, sharedType)
+            node.addChildren(children)
+        }
+
+
 //        childrenFlow.collect {
 //            println("azis;jnedsin")
 //            if (it is SharedElementNode) {

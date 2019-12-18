@@ -116,6 +116,13 @@
         </action>
 
         <action id="PSI.StubVisitorAction"
+                class="actions.psi.StubVisitorAction"
+                text="Coroutined Stub Visitor"
+                description="Visit Kotlin files stubs.">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+
+        <action id="PSI.PlainStubVisitorAction"
                 class="actions.psi.PlainStubVisitorAction"
                 text="Stub Visitor"
                 description="Visit Kotlin files stubs.">
