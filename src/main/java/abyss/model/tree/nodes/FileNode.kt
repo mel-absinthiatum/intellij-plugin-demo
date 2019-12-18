@@ -21,10 +21,9 @@ data class PackageModel(
 ): PackageModelInterface
 
 
-// TODO: notnull parent and model
 class PackageNode (
-    val model: PackageContainable,
-    val sharedChildren: Array<PackageContainable>,
+    val model: PackageModel,
+    val children: MutableList<SharedItemNode>,
     override var nodeParent: NodeInterface?
 ): NodeInterface {
 
@@ -32,44 +31,37 @@ class PackageNode (
         // TODO: Implement as well as other mutating methods
     }
 
-    constructor(model: PackageContainable, parent: NodeInterface?) : this(model, arrayOf<PackageContainable>(), parent)
+    constructor(model: PackageModel, parent: NodeInterface? = null) : this(model, mutableListOf<SharedItemNode>(), parent)
     init {
         // TODO: Sort
 //        children.sortWith(compareBy { it.name.toLowerCase() })
     }
 
-    override fun children(): Enumeration<NodeInterface> { return sharedChildren.mapNotNull { model ->
-        when (model) {
-            is SharedElementModelInterface -> { SharedElementNode(model, this) }
-            is PackageModelInterface -> { PackageNode(model, this) }
+    fun addChildren(nodes: List<SharedItemNode>) {
+        nodes.forEach {
+            it.nodeParent = this
+            children.add(it)
         }
-        null
-    }.toEnumeration()}
+    }
+
+    override fun children(): Enumeration<NodeInterface> = children.toEnumeration()
 
     override fun isLeaf(): Boolean {
         return childCount == 0
     }
 
     override fun getChildCount(): Int {
-        return sharedChildren.size
+        return children.size
     }
 
     override fun getParent(): TreeNode? {
         return this.nodeParent
     }
 
-    override fun getChildAt(childIndex: Int): TreeNode? {
-        val model = sharedChildren[childIndex]
-        when (model) {
-            is SharedElementModelInterface -> { SharedElementNode(model, this) }
-            is PackageModelInterface -> { PackageNode(model, this) }
-        }
-        return null
-    }
+    override fun getChildAt(childIndex: Int): TreeNode? = children[childIndex]
 
     override fun getIndex(node: TreeNode?): Int {
-        val n = node as ExpectOrActualNode
-        return sharedChildren.indexOfFirst { it == n.model }
+        return children.indexOfFirst { it == node }
     }
 
     override fun getAllowsChildren(): Boolean {
@@ -78,9 +70,29 @@ class PackageNode (
 }
 
 
+class ModuleNode(
+    val model: String,
+    val children: MutableList<PackageNode>,
+    override var nodeParent: NodeInterface?
+): NodeInterface {
+    override fun children(): Enumeration<out TreeNode> = children.toEnumeration()
+
+    override fun isLeaf(): Boolean = childCount == 0
+
+    override fun getChildCount(): Int = children.size
+
+    override fun getParent(): TreeNode? = nodeParent
+
+    override fun getChildAt(childIndex: Int): TreeNode = children[childIndex]
+
+    override fun getIndex(node: TreeNode?): Int = children.indexOfFirst { it == node }
+
+    override fun getAllowsChildren(): Boolean = true
+}
+
 class MPackageNode(
     val model: PackageContainable,
-    val sharedChildren: Array<PackageContainable>,
+    val sharedChildren: MutableList<PackageNode>,
     val nodeParent: TreeNode?
 ): MutableTreeNode {
     override fun children(): Enumeration<out TreeNode> {

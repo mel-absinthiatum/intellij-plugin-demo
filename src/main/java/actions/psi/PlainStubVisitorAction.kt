@@ -2,10 +2,7 @@ package actions.psi
 
 
 import abyss.model.SharedType
-import abyss.model.tree.nodes.ExpectOrActuaItemlNode
-import abyss.model.tree.nodes.ExpectOrActualModel
-import abyss.model.tree.nodes.SharedElementModel
-import abyss.model.tree.nodes.SharedItemNode
+import abyss.model.tree.nodes.*
 import abyss.modulesRoutines.MppAuthorityManager
 import abyss.modulesRoutines.MppAuthorityZone
 import com.intellij.openapi.actionSystem.AnAction
@@ -42,20 +39,25 @@ class PlainStubVisitorAction : AnAction() {
         val mppAuthorityZones = MppAuthorityManager().provideAuthorityZonesForProject(project)
         mppAuthorityZones.forEach { authorityZone ->
             val list = iterateTree(authorityZone, project)
-            list.forEach { node ->
-                println("collected ${node.model.name}")
+            list.forEach { fileNode ->
+                println("file node: ${fileNode.model.title}")
 
-                node.children.forEach { child ->
-                    when (child) {
-                        is SharedItemNode -> println("collected: ${child.model.name}")
-                        is ExpectOrActuaItemlNode -> println("expect or actual")
+                fileNode.children.forEach { node ->
+                    println("__collected ${node.model.name}")
+
+                    node.children.forEach { child ->
+                        when (child) {
+                            is SharedItemNode -> println("____collected: ${child.model.name}")
+                            is ExpectOrActuaItemlNode -> println("_____expect or actual")
+                        }
                     }
                 }
+
             }
         }
     }
 
-    private fun iterateTree(authorityZone: MppAuthorityZone, project: Project): List<SharedItemNode> {
+    private fun iterateTree(authorityZone: MppAuthorityZone, project: Project): List<PackageNode> {
         val sourceRoots = authorityZone.commonModule.sourceRoots
 
         val psiFiles = mutableListOf<PsiFile>()
@@ -69,9 +71,18 @@ class PlainStubVisitorAction : AnAction() {
             })
         }
 
-        val list = psiFiles.map { psiFile ->
-            registerDeclaration(psiFile, SharedType.EXPECTED)
-        }.flatten()
+        val list = psiFiles.mapNotNull { psiFile ->
+            val children = registerDeclaration(psiFile, SharedType.EXPECTED)
+
+            if (children.isNotEmpty()) {
+                val fileNodeModel = PackageModel(psiFile.name, psiFile.virtualFile)
+                val node = PackageNode(fileNodeModel)
+                node.addChildren(children)
+                node
+            } else {
+                null
+            }
+        }
         return list
     }
 
