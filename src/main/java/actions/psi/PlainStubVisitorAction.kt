@@ -2,8 +2,9 @@ package actions.psi
 
 
 import abyss.model.SharedType
+import abyss.model.tree.nodes.ExpectOrActuaItemlNode
 import abyss.model.tree.nodes.SharedElementModel
-import abyss.model.tree.nodes.SharedElementNode
+import abyss.model.tree.nodes.SharedItemNode
 import abyss.modulesRoutines.MppAuthorityManager
 import abyss.modulesRoutines.MppAuthorityZone
 import com.intellij.openapi.actionSystem.AnAction
@@ -42,14 +43,17 @@ class PlainStubVisitorAction : AnAction() {
             list.forEach { node ->
                 println("collected ${node.model.name}")
 
-                node.nestedElementsNodes.forEach { child ->
-                    println("__ collected nested: ${child.model.name}")
+                node.children.forEach { child ->
+                    when (child) {
+                        is SharedItemNode -> println("collected: ${child.model.name}")
+                        is ExpectOrActuaItemlNode -> println("expect or actual")
+                    }
                 }
             }
         }
     }
 
-    private fun iterateTree(authorityZone: MppAuthorityZone, project: Project): List<SharedElementNode> {
+    private fun iterateTree(authorityZone: MppAuthorityZone, project: Project): List<SharedItemNode> {
         val sourceRoots = authorityZone.commonModule.sourceRoots
 
         val psiFiles = mutableListOf<PsiFile>()
@@ -78,8 +82,8 @@ class PlainStubVisitorAction : AnAction() {
     private fun registerDeclaration(
         element: PsiElement,
         sharedType: SharedType
-    ): List<SharedElementNode> {
-        val list = mutableListOf<SharedElementNode>()
+    ): List<SharedItemNode> {
+        val list = mutableListOf<SharedItemNode>()
         element.acceptChildren(
             namedDeclarationVisitor { declaration ->
                 val node =
@@ -105,11 +109,13 @@ class PlainStubVisitorAction : AnAction() {
     private fun registerDeclaration1(
         element: Array<PsiElement>,
         sharedType: SharedType
-    ): List<SharedElementNode> {
-        val list = mutableListOf<SharedElementNode>()
+    ): List<SharedItemNode> {
+        val list = mutableListOf<SharedItemNode>()
         element.forEach {
             it.accept(
                 namedDeclarationVisitor { declaration ->
+                    println("fqname: ${declaration.fqName}")
+
                     val node =
                         when (declaration) {
                             is KtAnnotation -> registerAnnotation(declaration, sharedType)
@@ -159,53 +165,46 @@ class PlainStubVisitorAction : AnAction() {
 //            })
 //    }
 
-//    private fun makeElementNode(declaration: PsiElement, sharedType: SharedType): TreeNode? {
-//        return when (declaration) {
-//            is KtAnnotation -> registerAnnotation(declaration, sharedType)
-//            is KtClass -> registerClass(declaration, sharedType)
-//            is KtNamedFunction -> registerNamedFunction(declaration, sharedType)
-//            is KtProperty -> registerProperty(declaration, sharedType)
-//            is KtObjectDeclaration -> registerObject(declaration, sharedType)
-//            is KtTypeAlias -> {
-//                val stub = declaration.stub
-//                null
-//            }
-//            else -> null
-//        }
-//    }
-
-
-    private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): SharedElementNode {
-        val stub = annotation.stub
-        if (stub == null) {
-            println("Achtung!!!")
+    private fun makeElementNode(declaration: PsiElement, sharedType: SharedType): SharedItemNode? {
+        return when (declaration) {
+            is KtAnnotation -> registerAnnotation(declaration, sharedType)
+            is KtClass -> registerClass(declaration, sharedType)
+            is KtNamedFunction -> registerNamedFunction(declaration, sharedType)
+            is KtProperty -> registerProperty(declaration, sharedType)
+            is KtObjectDeclaration -> registerObject(declaration, sharedType)
+            is KtTypeAlias -> {
+                val stub = declaration.stub
+                null
+            }
+            else -> null
         }
-        val model = SharedElementModel(annotation.name, sharedType, stub)
-        println(annotation.name)
-        return SharedElementNode(model, null)
     }
 
-    private fun registerProperty(property: KtProperty, sharedType: SharedType): SharedElementNode {
+
+    private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): SharedItemNode {
+        val stub = annotation.stub
+
+        val model = SharedElementModel(annotation.name, sharedType, stub)
+        println(annotation.name)
+        return SharedItemNode(model)
+    }
+
+    private fun registerProperty(property: KtProperty, sharedType: SharedType): SharedItemNode {
         val stub = property.stub
-        if (stub == null) {
-            println("Achtung!!!")
-        }
         val model = SharedElementModel(property.name, sharedType, stub)
         println(property.name)
 
-        return SharedElementNode(model, null)
+        return SharedItemNode(model)
     }
 
-    private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): SharedElementNode {
+    private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): SharedItemNode {
         val stub = function.stub
-        if (stub == null) {
-            println("Achtung!!!")
-        }
+
         val model = SharedElementModel(function.name, sharedType, stub)
-        return SharedElementNode(model, null)
+        return SharedItemNode(model)
     }
 
-    private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedElementNode {
+    private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedItemNode {
         val stub = classDeclaration.stub
         if (stub == null) {
             println("Achtung!!!")
@@ -213,7 +212,7 @@ class PlainStubVisitorAction : AnAction() {
 
         val model = SharedElementModel(classDeclaration.name, sharedType, stub)
 
-        val node = SharedElementNode(model, null)
+        val node = SharedItemNode(model)
 
         val nested = classDeclaration.body?.children
 
@@ -236,12 +235,12 @@ class PlainStubVisitorAction : AnAction() {
     private fun registerObject(
         objectDeclaration: KtObjectDeclaration,
         sharedType: SharedType
-    ): SharedElementNode {
+    ): SharedItemNode {
         val stub = objectDeclaration.stub
 
         val model = SharedElementModel(objectDeclaration.name, sharedType, stub)
 
-        val node = SharedElementNode(model, null)
+        val node = SharedItemNode(model)
 
         val children = registerDeclaration(objectDeclaration, sharedType)
 

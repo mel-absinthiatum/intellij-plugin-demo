@@ -1,7 +1,6 @@
 package abyss.model.tree.tmp
 
 import abyss.model.SharedType
-import abyss.model.tree.nodes.toEnumeration
 import com.intellij.psi.stubs.Stub
 import java.net.URL
 import java.util.*

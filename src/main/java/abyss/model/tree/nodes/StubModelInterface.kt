@@ -272,7 +272,7 @@ class SharedElementNode (
 /**
  * Extension function for converting a {@link List} to an {@link Enumeration}
  */
-fun <T> List<T>.toEnumeration(): Enumeration<T> {
+private fun <T> List<T>.toEnumeration(): Enumeration<T> {
     return object : Enumeration<T> {
         var count = 0
 
@@ -289,7 +289,7 @@ fun <T> List<T>.toEnumeration(): Enumeration<T> {
     }
 }
 
-fun <T> emptyEnumeration(): Enumeration<T> {
+private fun <T> emptyEnumeration(): Enumeration<T> {
     return object : Enumeration<T> {
 
         override fun hasMoreElements(): Boolean {

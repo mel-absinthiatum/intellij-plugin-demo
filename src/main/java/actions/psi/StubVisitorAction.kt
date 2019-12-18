@@ -134,12 +134,12 @@ class StubVisitorAction : AnAction() {
         element: PsiFile,
         sharedType: SharedType
     ): Flow<SharedElementNode?> = channelFlow {
-//        println("register declaration method")
+        //        println("register declaration method")
 
         element.acceptChildren(
             namedDeclarationVisitor { declaration ->
                 launch {
-//                    println("register declaration method launch")
+                    //                    println("register declaration method launch")
 
                     when (declaration) {
                         is KtAnnotation -> {
@@ -172,12 +172,12 @@ class StubVisitorAction : AnAction() {
         element: PsiElement,
         sharedType: SharedType
     ): Flow<SharedElementNode?> = channelFlow {
-//        println("register declaration method")
+        //        println("register declaration method")
 
         element.acceptChildren(
             namedDeclarationVisitor { declaration ->
                 launch {
-//                    println("register declaration method launch")
+                    //                    println("register declaration method launch")
 
                     when (declaration) {
                         is KtAnnotation -> send(registerAnnotation(declaration, sharedType))
@@ -199,23 +199,25 @@ class StubVisitorAction : AnAction() {
         element: Array<PsiElement>,
         sharedType: SharedType
     ): Flow<SharedElementNode> = channelFlow {
-//        println("register nested declaration")
+        //        println("register nested declaration")
         element.forEach {
             it.accept(
                 namedDeclarationVisitor { declaration ->
+                    println("fqname: ${declaration.fqName}")
                     launch {
 
-                            when (declaration) {
-                                is KtAnnotation -> send(registerAnnotation(declaration, sharedType))
-                                is KtClass -> send(registerClass(declaration, sharedType))
-                                is KtNamedFunction -> send(registerNamedFunction(declaration, sharedType))
-                                is KtProperty -> send(registerProperty(declaration, sharedType))
-                                is KtObjectDeclaration -> send(registerObject(declaration, sharedType))
-                                is KtTypeAlias -> {
-                                    val stub = declaration.stub
-                                }
-                                else -> {}
+                        when (declaration) {
+                            is KtAnnotation -> send(registerAnnotation(declaration, sharedType))
+                            is KtClass -> send(registerClass(declaration, sharedType))
+                            is KtNamedFunction -> send(registerNamedFunction(declaration, sharedType))
+                            is KtProperty -> send(registerProperty(declaration, sharedType))
+                            is KtObjectDeclaration -> send(registerObject(declaration, sharedType))
+                            is KtTypeAlias -> {
+                                val stub = declaration.stub
                             }
+                            else -> {
+                            }
+                        }
 
                     }
                 })
@@ -241,15 +243,13 @@ class StubVisitorAction : AnAction() {
     private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): SharedElementNode {
         val stub = annotation.stub
         val model = SharedElementModel(annotation.name, sharedType, stub)
-//        println(annotation.name)
         return SharedElementNode(model, null)
     }
 
     private fun registerProperty(property: KtProperty, sharedType: SharedType): SharedElementNode {
         val stub = property.stub
+        val actuals = property.actualsForExpected()
         val model = SharedElementModel(property.name, sharedType, stub)
-//        println(property.name)
-
         return SharedElementNode(model, null)
     }
 
@@ -262,7 +262,6 @@ class StubVisitorAction : AnAction() {
     private suspend fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedElementNode {
         val stub = classDeclaration.stub
         val model = SharedElementModel(classDeclaration.name, sharedType, stub)
-//        println(classDeclaration.name)
 
         val node = SharedElementNode(model, null)
 
