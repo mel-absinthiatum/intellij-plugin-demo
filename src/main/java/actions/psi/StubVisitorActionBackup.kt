@@ -337,14 +337,14 @@ class StubVisitorActionBackup : AnAction() {
 
     private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): TreeNode {
         val stub = annotation.stub
-        val model = ExpectOrActualModel(sharedType, stub)
+        val model = ExpectOrActualModel(annotation, sharedType, stub)
         println(annotation.name)
         return ExpectOrActualNode(model, null)
     }
 
     private fun registerProperty(property: KtProperty, sharedType: SharedType): TreeNode {
         val stub = property.stub
-        val model = ExpectOrActualModel(sharedType, stub)
+        val model = ExpectOrActualModel(property, sharedType, stub)
         println(property.name)
 
         return ExpectOrActualNode(model, null)
@@ -352,14 +352,14 @@ class StubVisitorActionBackup : AnAction() {
 
     private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): TreeNode {
         val stub = function.stub
-        val model = ExpectOrActualModel(sharedType, stub)
+        val model = ExpectOrActualModel(function, sharedType, stub)
         return  ExpectOrActualNode(model, null)
     }
 
     private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): TreeNode {
         val stub = classDeclaration.stub
 
-        val model = ExpectOrActualModel(sharedType, stub)
+        val model = ExpectOrActualModel(classDeclaration, sharedType, stub)
         println(classDeclaration.name)
 
         return  ExpectOrActualNode(model, null)
@@ -369,7 +369,7 @@ class StubVisitorActionBackup : AnAction() {
     private fun registerObject(objectDeclaration: KtObjectDeclaration, sharedType: SharedType): TreeNode {
         val stub = objectDeclaration.stub
 
-        val model = ExpectOrActualModel(sharedType, stub)
+        val model = ExpectOrActualModel(objectDeclaration, sharedType, stub)
         return ExpectOrActualNode(model, null)
 
     }

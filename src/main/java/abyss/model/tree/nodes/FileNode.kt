@@ -25,14 +25,14 @@ data class PackageModel(
 class PackageNode (
     val model: PackageContainable,
     val sharedChildren: Array<PackageContainable>,
-    val nodeParent: TreeNode?
+    override var nodeParent: NodeInterface?
 ): NodeInterface {
 
     fun insertChild(child: PackageContainable) {
         // TODO: Implement as well as other mutating methods
     }
 
-    constructor(model: PackageContainable, parent: TreeNode) : this(model, arrayOf<PackageContainable>(), parent)
+    constructor(model: PackageContainable, parent: NodeInterface?) : this(model, arrayOf<PackageContainable>(), parent)
     init {
         // TODO: Sort
 //        children.sortWith(compareBy { it.name.toLowerCase() })

@@ -3,6 +3,7 @@ package actions.psi
 
 import abyss.model.SharedType
 import abyss.model.tree.nodes.ExpectOrActuaItemlNode
+import abyss.model.tree.nodes.ExpectOrActualModel
 import abyss.model.tree.nodes.SharedElementModel
 import abyss.model.tree.nodes.SharedItemNode
 import abyss.modulesRoutines.MppAuthorityManager
@@ -18,6 +19,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.stubs.StubIndex
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.kotlin.idea.stubindex.KotlinFullClassNameIndex
+import org.jetbrains.kotlin.idea.util.actualsForExpected
 import org.jetbrains.kotlin.idea.util.sourceRoots
 import org.jetbrains.kotlin.psi.*
 
@@ -86,19 +88,7 @@ class PlainStubVisitorAction : AnAction() {
         val list = mutableListOf<SharedItemNode>()
         element.acceptChildren(
             namedDeclarationVisitor { declaration ->
-                val node =
-                    when (declaration) {
-                        is KtAnnotation -> registerAnnotation(declaration, sharedType)
-                        is KtClass -> registerClass(declaration, sharedType)
-                        is KtNamedFunction -> registerNamedFunction(declaration, sharedType)
-                        is KtProperty -> registerProperty(declaration, sharedType)
-                        is KtObjectDeclaration -> registerObject(declaration, sharedType)
-                        is KtTypeAlias -> {
-                            val stub = declaration.stub
-                            null
-                        }
-                        else -> null
-                    }
+                val node = makeElementNode(declaration, sharedType)
                 if (node != null) {
                     list.add(node)
                 }
@@ -106,7 +96,7 @@ class PlainStubVisitorAction : AnAction() {
         return list
     }
 
-    private fun registerDeclaration1(
+    private fun registerNestedDeclaration(
         element: Array<PsiElement>,
         sharedType: SharedType
     ): List<SharedItemNode> {
@@ -116,19 +106,7 @@ class PlainStubVisitorAction : AnAction() {
                 namedDeclarationVisitor { declaration ->
                     println("fqname: ${declaration.fqName}")
 
-                    val node =
-                        when (declaration) {
-                            is KtAnnotation -> registerAnnotation(declaration, sharedType)
-                            is KtClass -> registerClass(declaration, sharedType)
-                            is KtNamedFunction -> registerNamedFunction(declaration, sharedType)
-                            is KtProperty -> registerProperty(declaration, sharedType)
-                            is KtObjectDeclaration -> registerObject(declaration, sharedType)
-                            is KtTypeAlias -> {
-                                val stub = declaration.stub
-                                null
-                            }
-                            else -> null
-                        }
+                    val node = makeElementNode(declaration, sharedType)
                     if (node != null) {
                         list.add(node)
                     }
@@ -137,36 +115,8 @@ class PlainStubVisitorAction : AnAction() {
         return list
     }
 
-
-//    private suspend fun registerDeclaration1(
-//        element: PsiElement,
-//        sharedType: SharedType
-//    ): Flow<SharedElementNode?> = channelFlow {
-//        println("register declaration method")
-//
-//        element.acceptChildren(
-//            namedDeclarationVisitor { declaration ->
-//                launch {
-//                    println("register declaration method launch")
-//
-//                    when (declaration) {
-//                        is KtAnnotation -> send(registerAnnotation(declaration, sharedType))
-//                        is KtClass -> send(registerClass(declaration, sharedType))
-//                        is KtNamedFunction -> send(registerNamedFunction(declaration, sharedType))
-//                        is KtProperty -> send(registerProperty(declaration, sharedType))
-//                        is KtObjectDeclaration -> send(registerObject(declaration, sharedType))
-//                        is KtTypeAlias -> {
-//                            val stub = declaration.stub
-//                            send(null)
-//                        }
-//                        else -> send(null)
-//                    }
-//                }
-//            })
-//    }
-
     private fun makeElementNode(declaration: PsiElement, sharedType: SharedType): SharedItemNode? {
-        return when (declaration) {
+        val node = when (declaration) {
             is KtAnnotation -> registerAnnotation(declaration, sharedType)
             is KtClass -> registerClass(declaration, sharedType)
             is KtNamedFunction -> registerNamedFunction(declaration, sharedType)
@@ -177,6 +127,25 @@ class PlainStubVisitorAction : AnAction() {
                 null
             }
             else -> null
+        }
+        if (declaration is KtDeclaration) {
+            node?.addChild(makeExpectNodeForElement(declaration))
+            node?.addChildren(makeActualNodesForElement(declaration))
+        }
+        return node
+    }
+
+
+    private fun makeExpectNodeForElement(element: PsiElement): ExpectOrActuaItemlNode {
+        val model = ExpectOrActualModel(element, SharedType.EXPECTED, null)
+        return ExpectOrActuaItemlNode(model)
+    }
+
+    private fun makeActualNodesForElement(element: KtDeclaration): List<ExpectOrActuaItemlNode> {
+        val actuals = element.actualsForExpected()
+        return actuals.map {
+            val model = ExpectOrActualModel(it, SharedType.ACTUAL, null)
+            ExpectOrActuaItemlNode(model)
         }
     }
 
@@ -206,9 +175,6 @@ class PlainStubVisitorAction : AnAction() {
 
     private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedItemNode {
         val stub = classDeclaration.stub
-        if (stub == null) {
-            println("Achtung!!!")
-        }
 
         val model = SharedElementModel(classDeclaration.name, sharedType, stub)
 
@@ -217,17 +183,9 @@ class PlainStubVisitorAction : AnAction() {
         val nested = classDeclaration.body?.children
 
         if (nested != null) {
-            val children = registerDeclaration1(nested, sharedType)
+            val children = registerNestedDeclaration(nested, sharedType)
             node.addChildren(children)
         }
-
-
-//        childrenFlow.collect {
-//            println("azis;jnedsin")
-//            if (it is SharedElementNode) {
-//                node.addChildNode(it)
-//            }
-//        }
 
         return node
     }
@@ -242,9 +200,12 @@ class PlainStubVisitorAction : AnAction() {
 
         val node = SharedItemNode(model)
 
-        val children = registerDeclaration(objectDeclaration, sharedType)
+        val nested = objectDeclaration.body?.children
 
-        node.addChildren(children)
+        if (nested != null) {
+            val children = registerNestedDeclaration(nested, sharedType)
+            node.addChildren(children)
+        }
 
         return node
     }

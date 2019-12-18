@@ -3,26 +3,35 @@ package abyss.model.tree.nodes
 import java.util.*
 import javax.swing.tree.TreeNode
 
-sealed class ElementNode: NodeInterface
-data class SharedItemNode(var model: SharedElementModelInterface, var nodeParent: NodeInterface? = null, var children: MutableList<ElementNode> = mutableListOf()): ElementNode() {
+interface ElementNode : NodeInterface
+data class SharedItemNode(
+    var model: SharedElementModelInterface,
+    override var nodeParent: NodeInterface? = null,
+    var children: MutableList<ElementNode> = mutableListOf()
+) : ElementNode {
 
 //    init {
 //        // TODO: Sort
 ////        children.sortWith(compareBy { it.name.toLowerCase() })
 //    }
 
-    fun addChild(model: SharedElementModelInterface) {
-        val node = SharedItemNode(model, this)
+
+    fun addChild(node: ElementNode) {
+        node.nodeParent = this
         children.add(node)
     }
 
-    fun addChildren(nodes: List<SharedItemNode>) {
+    fun addChildren(nodes: List<ElementNode>) {
         nodes.forEach {
             it.nodeParent = this
             children.add(it)
         }
     }
 
+    fun addChild(model: SharedElementModelInterface) {
+        val node = SharedItemNode(model, this)
+        children.add(node)
+    }
 
     override fun children(): Enumeration<NodeInterface> {
         return children.toEnumeration()
@@ -53,8 +62,11 @@ data class SharedItemNode(var model: SharedElementModelInterface, var nodeParent
     }
 }
 
-data class ExpectOrActuaItemlNode(val model: ExpectOrActualModel, var nodeParent: ElementNode? = null): ElementNode() {
-    override fun children(): Enumeration<NodeInterface> { return emptyEnumeration() }
+data class ExpectOrActuaItemlNode(val model: ExpectOrActualModel, override var nodeParent: NodeInterface? = null) :
+    ElementNode {
+    override fun children(): Enumeration<NodeInterface> {
+        return emptyEnumeration()
+    }
 
     override fun isLeaf(): Boolean {
         return true

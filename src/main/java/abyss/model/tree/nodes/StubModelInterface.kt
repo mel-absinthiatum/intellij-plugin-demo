@@ -1,6 +1,7 @@
 package abyss.model.tree.nodes
 
 import abyss.model.SharedType
+import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.Stub
 import java.net.URL
 import java.util.*
@@ -14,15 +15,17 @@ interface SharedStubModelInterface {
     val url: URL
 }
 
-interface NodeInterface: TreeNode
+interface NodeInterface: TreeNode {
+    var nodeParent: NodeInterface?
+}
 
 class Node(
     val title: String,
     var sharedChildren: Array<String>,
-    val nodeParent: TreeNode?
+    override var nodeParent: NodeInterface?
 ): NodeInterface  {
 
-    constructor(title: String, parent: TreeNode) : this(title, arrayOf(), parent)
+    constructor(title: String, parent: NodeInterface?) : this(title, arrayOf(), parent)
     constructor(sharedChildren: Array<String>) : this("", sharedChildren, null)
 
     override fun children(): Enumeration<NodeInterface> { return sharedChildren.map { Node(it, this) }.toEnumeration()}
@@ -56,18 +59,20 @@ class Node(
 
 
 interface ExpectOrActualModelInterface: ElementContainable {
+    val psi: PsiElement
     val type: SharedType
     val stub: Stub?
 }
 
 data class ExpectOrActualModel(
+    override val psi: PsiElement,
     override val type: SharedType,
     override val stub: Stub?
 ) : ExpectOrActualModelInterface
 
 class ExpectOrActualNode(
     val model: ExpectOrActualModelInterface,
-    var nodeParent: TreeNode?
+    override var nodeParent: NodeInterface?
 ): NodeInterface {
 
     override fun children(): Enumeration<NodeInterface> { return emptyEnumeration() }
@@ -117,14 +122,14 @@ data class SharedElementModel(
 class SharedElementNode (
     val model: SharedElementModelInterface,
     var sharedChildren: Array<ElementContainable>,
-    var nodeParent: TreeNode?
+    override var nodeParent: NodeInterface?
 ): NodeInterface {
 
     // TODO: Kotlin readonly public properties
     val nestedElementsNodes = mutableListOf<SharedElementNode>()
     private val expectOrActualNodes = mutableListOf<ExpectOrActualNode>()
 
-    constructor(model: SharedElementModelInterface, parent: TreeNode?) : this(model, arrayOf<ElementContainable>(), parent)
+    constructor(model: SharedElementModelInterface, parent: NodeInterface?) : this(model, arrayOf<ElementContainable>(), parent)
 //    constructor(sharedChildren: Array<ExpectOrActualModel>) : this(null, sharedChildren, null)
 
     init {
