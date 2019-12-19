@@ -47,8 +47,45 @@ abstract class TemplateNode<C: CustomNodeInterface, P: CustomNodeInterface>(
     override fun removeNodeParent() {
         nodeParent = null
     }
+
+    override fun getAllowsChildren(): Boolean = true
+
 }
 
+
+interface SharedElementContent: CustomNodeInterface
+
+class ExpectOrActualNode1: TemplateNode<Nothing, SharedElementNode1>(), SharedElementContent {
+    override fun getAllowsChildren(): Boolean = false
+
+    override fun add(node: Nothing) { assert(false) { "Not allowed." } }
+
+    override fun add(nodes: List<Nothing>) { assert(false) { "Not allowed." } }
+
+    override fun remove(node: Nothing) { assert(false) { "Not allowed." } }
+
+    override fun children(): Enumeration<out TreeNode> = emptyEnumeration()
+
+    override fun isLeaf(): Boolean = true
+
+    override fun getChildCount(): Int = 0
+
+    override fun getChildAt(childIndex: Int): TreeNode? {
+        assert(false) { "Not allowed." }
+        return null
+    }
+
+    override fun getIndex(node: TreeNode?): Int {
+        assert(false) { "Not allowed." }
+        return -1
+    }
+}
+
+class SharedElementNode1: TemplateNode<SharedElementContent, CustomNodeInterface>(), SharedElementContent {
+}
+
+class FileNode1: TemplateNode<SharedElementNode1, CustomNodeInterface>() {
+}
 
 
 
