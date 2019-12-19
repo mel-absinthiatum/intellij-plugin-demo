@@ -14,21 +14,25 @@ interface SharedStubModelInterface {
     val sharedChildren: Collection<SharedStubModelInterface>
     val url: URL
 }
+interface OldNodeInterface: TreeNode {
+    var nodeParent: OldNodeInterface?
 
+}
 interface NodeInterface: TreeNode {
     var nodeParent: NodeInterface?
 }
 
+
 class Node(
     val title: String,
     var sharedChildren: Array<String>,
-    override var nodeParent: NodeInterface?
-): NodeInterface  {
+    override var nodeParent: OldNodeInterface?
+): OldNodeInterface  {
 
-    constructor(title: String, parent: NodeInterface?) : this(title, arrayOf(), parent)
+    constructor(title: String, parent: OldNodeInterface?) : this(title, arrayOf(), parent)
     constructor(sharedChildren: Array<String>) : this("", sharedChildren, null)
 
-    override fun children(): Enumeration<NodeInterface> { return sharedChildren.map { Node(it, this) }.toEnumeration()}
+    override fun children(): Enumeration<OldNodeInterface> { return sharedChildren.map { Node(it, this) }.toEnumeration()}
 
     override fun isLeaf(): Boolean {
         return childCount == 0
