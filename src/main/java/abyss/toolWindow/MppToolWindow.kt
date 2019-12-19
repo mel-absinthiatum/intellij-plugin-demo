@@ -1,10 +1,15 @@
 package abyss.toolWindow
 
+import abyss.extensionPoints.SharedElementsTopics
+import abyss.extensionPoints.SharedElementsTopicsNotifier
 import abyss.psi.SharedItemsStubsProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
+import com.intellij.ui.components.Label
+import javax.naming.Context
 import javax.swing.BoxLayout
 import javax.swing.ImageIcon
+import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.TreeCellRenderer
@@ -15,7 +20,7 @@ class MppToolWindow (private val project: Project, private val toolWindow: ToolW
     init {
         val panel = JPanel()
         panel.layout = BoxLayout(panel, BoxLayout.LINE_AXIS)
-        createToolWindowTree()
+//        createToolWindowTree()
 //        val customTree = createToolWindowTree()
 //
 //        val scrollPane = JBScrollPane(customTree)
@@ -24,6 +29,30 @@ class MppToolWindow (private val project: Project, private val toolWindow: ToolW
 //        panel.add(scrollPane)
 
         content = panel
+        content.add(Label("ajdfgnai"))
+        showTestLabel()
+
+    }
+
+    private fun showTestLabel() {
+        //        ComponentManagerImpl(null).messageBus
+        val bus = project.messageBus
+        bus.connect().subscribe(SharedElementsTopics.CHANGE_ACTION_TOPIC, object : SharedElementsTopicsNotifier {
+            override fun beforeAction(context: Context) {
+                // Process 'before action' event.
+            }
+
+            override fun afterAction(context: Context) {
+                // Process 'after action' event.
+            }
+
+            override fun stringUpdated(string: String) {
+                val label = JLabel()
+                label.text = string
+                content.add(label)
+                println("string displayed")
+            }
+        })
     }
 
     private fun createToolWindowTree() {

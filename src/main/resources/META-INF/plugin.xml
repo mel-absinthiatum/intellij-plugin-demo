@@ -40,8 +40,7 @@
         <toolWindow id="MPP Demo" secondary="false" icon="/toolWindowResources/plus.svg" anchor="right"
                     factoryClass="abyss.toolWindow.MppToolWindowFactory"/>
 
-
-        <gotoRelatedProvider implementation="org.jetbrains.kotlin.idea.goto.KotlinExpectOrActualGotoRelatedProvider"/>
+        <postStartupActivity implementation="abyss.extensionPoints.CustomStartupActivity"/>
     </extensions>
 
     <actions>
