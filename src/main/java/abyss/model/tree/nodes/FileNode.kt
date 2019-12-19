@@ -18,7 +18,7 @@ interface PackageModelInterface: PackageContainable {
 data class PackageModel(
     override val title: String,
     override val virtualFile: VirtualFile
-): PackageModelInterface
+): PackageModelInterface, NodeModel
 
 
 class PackageNode (

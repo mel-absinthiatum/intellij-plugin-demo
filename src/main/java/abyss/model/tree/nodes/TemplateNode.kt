@@ -3,11 +3,14 @@ package abyss.model.tree.nodes
 import java.util.*
 import javax.swing.tree.TreeNode
 
+
 interface CustomNodeInterface: TreeNode {
     fun removeNodeParent()
 }
 
-interface TemplateNodeInterface<C: CustomNodeInterface, P: CustomNodeInterface>: CustomNodeInterface {
+interface TemplateNodeInterface<M: NodeModel, P: CustomNodeInterface, C: CustomNodeInterface>: CustomNodeInterface {
+    var model: M
+
     var nodeParent: P?
 
     fun add(node: C)
@@ -17,11 +20,13 @@ interface TemplateNodeInterface<C: CustomNodeInterface, P: CustomNodeInterface>:
     fun remove(node: C)
 }
 
+interface NodeModel
 
-abstract class TemplateNode<C: CustomNodeInterface, P: CustomNodeInterface>(
+abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeInterface>(
+    override var model: M,
     override var nodeParent: P? = null,
     val children: MutableList<C> = mutableListOf()
-): TemplateNodeInterface<C, P>{
+): TemplateNodeInterface<M, P, C>{
 
     override fun add(node: C) { children.add(node) }
 
@@ -55,7 +60,10 @@ abstract class TemplateNode<C: CustomNodeInterface, P: CustomNodeInterface>(
 
 interface SharedElementContent: CustomNodeInterface
 
-class ExpectOrActualNode1: TemplateNode<Nothing, SharedElementNode1>(), SharedElementContent {
+// TODO: add abstract classes for root and leaf nodes
+class ExpectOrActualNode1(model: ExpectOrActualModel)
+    : TemplateNode<ExpectOrActualModel, SharedElementNode1, Nothing>(model),
+    SharedElementContent {
     override fun getAllowsChildren(): Boolean = false
 
     override fun add(node: Nothing) { assert(false) { "Not allowed." } }
@@ -81,68 +89,21 @@ class ExpectOrActualNode1: TemplateNode<Nothing, SharedElementNode1>(), SharedEl
     }
 }
 
-class SharedElementNode1: TemplateNode<SharedElementContent, CustomNodeInterface>(), SharedElementContent {
+class SharedElementNode1(model: SharedElementModel)
+    : TemplateNode<SharedElementModel, CustomNodeInterface, SharedElementContent>(model),
+    SharedElementContent
+
+class PackageNode1(model: PackageModel)
+    : TemplateNode<PackageModel, MppAuthorityZoneNode1, SharedElementNode1>(model)
+
+class MppAuthorityZoneNode1(model: MppAuthorityZoneModel)
+    : TemplateNode<MppAuthorityZoneModel, CustomNodeInterface, PackageNode1>(model)
+
+class RootNode: TemplateNode<NodeModel, Nothing, MppAuthorityZoneNode1>(rootNodeModel) {
+    override var nodeParent: Nothing? = null
+    override fun getParent(): TreeNode? = null
+    override fun removeNodeParent() {}
 }
 
-class FileNode1: TemplateNode<SharedElementNode1, CustomNodeInterface>() {
-}
+object rootNodeModel: NodeModel
 
-
-
-
-interface NewNodeInterface<C: TreeNode, P: TreeNode>: TreeNode {
-    var nodeParent: P?
-
-    fun add(child: C)
-
-    fun add(children: List<C>)
-
-    fun remove(child: C)
-}
-
-
-class K: NewNodeInterface<ExpectOrActualNode, SharedItemNode> {
-    override var nodeParent: SharedItemNode?
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-        set(value) {}
-
-    override fun add(child: ExpectOrActualNode) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun add(children: List<ExpectOrActualNode>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun remove(child: ExpectOrActualNode) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun children(): Enumeration<out TreeNode> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun isLeaf(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getChildCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getParent(): TreeNode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getChildAt(childIndex: Int): TreeNode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getIndex(node: TreeNode?): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getAllowsChildren(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-}

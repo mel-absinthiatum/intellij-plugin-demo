@@ -7,7 +7,7 @@ interface MppAuthorityZoneModelInterface {
     val title: String
 }
 
-class MppAuthorityZoneModel(override val title: String): MppAuthorityZoneModelInterface
+class MppAuthorityZoneModel(override val title: String): MppAuthorityZoneModelInterface, NodeModel
 
 class MppAuthorityZoneNode (
     var model: MppAuthorityZoneModelInterface,

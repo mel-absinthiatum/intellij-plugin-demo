@@ -72,7 +72,7 @@ data class ExpectOrActualModel(
     override val psi: PsiElement,
     override val type: SharedType,
     override val stub: Stub?
-) : ExpectOrActualModelInterface
+) : ExpectOrActualModelInterface, NodeModel
 
 class ExpectOrActualNode(
     val model: ExpectOrActualModelInterface,
@@ -120,7 +120,7 @@ data class SharedElementModel(
     override val name: String?,
     override val type: SharedType,
     override val stub: Stub?
-): SharedElementModelInterface
+): SharedElementModelInterface, NodeModel
 
 // TODO: notnull parent and model
 class SharedElementNode (
