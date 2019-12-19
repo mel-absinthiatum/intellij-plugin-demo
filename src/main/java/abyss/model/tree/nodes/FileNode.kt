@@ -76,6 +76,47 @@ class ModuleNode(
     override fun getAllowsChildren(): Boolean = true
 }
 
+class RootNode(val children: MutableList<MutableTreeNode>,
+               var nodeParent: MutableTreeNode?): MutableTreeNode {
+    override fun children(): Enumeration<out TreeNode> = children.toEnumeration()
+
+    override fun insert(child: MutableTreeNode, index: Int) {
+        children.add(index, child)
+    }
+
+    override fun setParent(newParent: MutableTreeNode?) {
+        nodeParent = newParent
+    }
+
+    override fun getParent(): TreeNode? = nodeParent
+
+    override fun getChildAt(childIndex: Int): TreeNode? = children[childIndex]
+
+    override fun getIndex(node: TreeNode?): Int = children.indexOfFirst { it == node }
+
+    override fun getAllowsChildren(): Boolean = true
+
+    override fun setUserObject(`object`: Any?) {
+        assert(true) { "Not allowed" }
+    }
+
+    override fun remove(index: Int) {
+        children.removeAt(index)
+    }
+
+    override fun remove(node: MutableTreeNode) {
+        children.remove(node)
+    }
+
+    override fun isLeaf(): Boolean = childCount == 0
+
+    override fun getChildCount(): Int = children.size
+
+    override fun removeFromParent() {
+        nodeParent?.remove(this)
+    }
+}
+
 class MPackageNode(
     val model: PackageContainable,
     val sharedChildren: MutableList<PackageNode>,
