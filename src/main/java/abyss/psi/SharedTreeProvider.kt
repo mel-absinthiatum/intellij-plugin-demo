@@ -70,8 +70,15 @@ class SharedTreeProvider {
         }
     }
 
+    suspend fun tree(project: Project): Tree = suspendCoroutine { cont ->
+        DumbServiceImpl.getInstance(project).smartInvokeLater {
+            runBlocking {
+                cont.resume(makeTree(project))
+            }
+        }
+    }
 
-    fun tree(project: Project): Tree {
+    private fun makeTree(project: Project): Tree {
         val rootNode = RootNode()
 
         val nodes = iterateAllZones(project)

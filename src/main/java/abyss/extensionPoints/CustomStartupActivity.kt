@@ -16,13 +16,15 @@ class CustomStartupActivity : StartupActivity {
     }
 
     private fun launchTreeUpdating(project: Project) {
-        val tree = SharedTreeProvider().tree(project)
-        println("tree generated")
-        val myBus = project.messageBus
-        val publisher: SharedElementsTopicsNotifier =
-            myBus.syncPublisher(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC)
-        publisher.sharedElementsTreeUpdated(tree)
-        println("tree published")
+        GlobalScope.launch {
+            val tree = SharedTreeProvider().tree(project)
+            println("tree generated")
+            val myBus = project.messageBus
+            val publisher: SharedElementsTopicsNotifier =
+                myBus.syncPublisher(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC)
+            publisher.sharedElementsTreeUpdated(tree)
+            println("tree published")
+        }
     }
 }
 

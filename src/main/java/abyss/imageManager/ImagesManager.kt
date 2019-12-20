@@ -13,7 +13,7 @@ class CustomIcons {
         }
     }
 
-    public final class Nodes {
+    class Nodes {
         companion object {
             val Root = AllIcons.Nodes.Folder
             val File = load("/abyss/file.png")
@@ -27,7 +27,7 @@ class CustomIcons {
         }
     }
 
-    public final class Actions {
+    class Actions {
         companion object {
             val Refresh = AllIcons.Actions.Refresh
         }
