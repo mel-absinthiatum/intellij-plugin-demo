@@ -113,7 +113,7 @@ data class SharedElementModel(
     override val stub: Stub?
 ): SharedElementModelInterface
 
-//class SharedElementNode<out T> (
+//class OldSharedElementNode<out T> (
 //    val model: T,
 //    val sharedChildren: Array<T>,
 //    val nodeParent: TreeNode?
@@ -130,11 +130,11 @@ data class SharedElementModel(
 //    override fun children(): Enumeration<abyss.model.tree.nodes.NodeInterface> { return sharedChildren.mapNotNull { model ->
 //        // TODO
 //        when (model) {
-//            is abyss.model.tree.nodes.SharedElementModelInterface -> { SharedElementNode(model, this) }
-//            is abyss.model.tree.nodes.ExpectOrActualModelInterface -> { ExpectOrActualNode(model, this) }
+//            is abyss.model.tree.nodes.SharedElementModelInterface -> { OldSharedElementNode(model, this) }
+//            is abyss.model.tree.nodes.ExpectOrActualModelInterface -> { OldExpectOrActualNode(model, this) }
 //        }
 //        null
-////        ExpectOrActualNode(it, this)
+////        OldExpectOrActualNode(it, this)
 //    }.toEnumeration()}
 //
 //    override fun isLeaf(): Boolean {
@@ -156,11 +156,11 @@ data class SharedElementModel(
 //            is abyss.model.tree.nodes.ExpectOrActualModelInterface -> { return null }
 //        }
 //        return null
-////        return ExpectOrActualNode(sharedChildren[childIndex], this)
+////        return OldExpectOrActualNode(sharedChildren[childIndex], this)
 //    }
 //
 //    override fun getIndex(node: TreeNode?): Int {
-//        val n = node as ExpectOrActualNode
+//        val n = node as OldExpectOrActualNode
 //        return sharedChildren.indexOfFirst { it == n.model }
 //    }
 //

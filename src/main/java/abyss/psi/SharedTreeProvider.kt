@@ -88,8 +88,8 @@ class SharedTreeProvider {
 
                     node.children.forEach { child ->
                         when (child) {
-                            is SharedElementNode1 -> println("____collected: ${child.model.name}")
-                            is ExpectOrActualNode1 -> println("_____expect or actual")
+                            is SharedElementNode -> println("____collected: ${child.model.name}")
+                            is ExpectOrActualNode -> println("_____expect or actual")
                         }
                     }
                 }
@@ -99,14 +99,14 @@ class SharedTreeProvider {
         return Tree(rootNode)
     }
 
-    private fun iterateAllZones(project: Project): List<MppAuthorityZoneNode1> {
+    private fun iterateAllZones(project: Project): List<MppAuthorityZoneNode> {
         val mppAuthorityZones = MppAuthorityManager().provideAuthorityZonesForProject(project)
         return mppAuthorityZones.mapNotNull { authorityZone ->
             val list = iterateTree(authorityZone, project)
 
             if (list.isNotEmpty()) {
                 val mppNodeModel = MppAuthorityZoneModel(authorityZone.commonModule.name)
-                val node = MppAuthorityZoneNode1(mppNodeModel)
+                val node = MppAuthorityZoneNode(mppNodeModel)
                 node.add(list)
                 node
             } else {
@@ -130,7 +130,7 @@ class SharedTreeProvider {
         }
     }
 
-    private fun iterateTree(authorityZone: MppAuthorityZone, project: Project): List<PackageNode1> {
+    private fun iterateTree(authorityZone: MppAuthorityZone, project: Project): List<PackageNode> {
         val sourceRoots = authorityZone.commonModule.sourceRoots
 
         val psiFiles = mutableListOf<PsiFile>()
@@ -149,7 +149,7 @@ class SharedTreeProvider {
 
             if (children.isNotEmpty()) {
                 val fileNodeModel = PackageModel(psiFile.name, psiFile.virtualFile)
-                val node = PackageNode1(fileNodeModel)
+                val node = PackageNode(fileNodeModel)
                 node.add(children)
                 node
             } else {
@@ -168,8 +168,8 @@ class SharedTreeProvider {
     private fun registerDeclaration(
         element: PsiElement,
         sharedType: SharedType
-    ): List<SharedElementNode1> {
-        val list = mutableListOf<SharedElementNode1>()
+    ): List<SharedElementNode> {
+        val list = mutableListOf<SharedElementNode>()
         element.acceptChildren(
             namedDeclarationVisitor { declaration ->
                 val node = makeElementNode(declaration, sharedType)
@@ -183,8 +183,8 @@ class SharedTreeProvider {
     private fun registerNestedDeclaration(
         element: Array<PsiElement>,
         sharedType: SharedType
-    ): List<SharedElementNode1> {
-        val list = mutableListOf<SharedElementNode1>()
+    ): List<SharedElementNode> {
+        val list = mutableListOf<SharedElementNode>()
         element.forEach {
             it.accept(
                 namedDeclarationVisitor { declaration ->
@@ -199,7 +199,7 @@ class SharedTreeProvider {
         return list
     }
 
-    private fun makeElementNode(declaration: PsiElement, sharedType: SharedType): SharedElementNode1? {
+    private fun makeElementNode(declaration: PsiElement, sharedType: SharedType): SharedElementNode? {
         val node = when (declaration) {
             is KtAnnotation -> registerAnnotation(declaration, sharedType)
             is KtClass -> registerClass(declaration, sharedType)
@@ -220,49 +220,49 @@ class SharedTreeProvider {
     }
 
 
-    private fun makeExpectNodeForElement(element: PsiElement): ExpectOrActualNode1 {
+    private fun makeExpectNodeForElement(element: PsiElement): ExpectOrActualNode {
         val model = ExpectOrActualModel(element, SharedType.EXPECTED, null)
-        return ExpectOrActualNode1(model)
+        return ExpectOrActualNode(model)
     }
 
-    private fun makeActualNodesForElement(element: KtDeclaration): List<ExpectOrActualNode1> {
+    private fun makeActualNodesForElement(element: KtDeclaration): List<ExpectOrActualNode> {
         val actuals = element.actualsForExpected()
         return actuals.map {
             val model = ExpectOrActualModel(it, SharedType.ACTUAL, null)
-            ExpectOrActualNode1(model)
+            ExpectOrActualNode(model)
         }
     }
 
 
-    private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): SharedElementNode1 {
+    private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): SharedElementNode {
         val stub = annotation.stub
 
         val model = SharedElementModel(annotation.name, sharedType, stub)
         println(annotation.name)
-        return SharedElementNode1(model)
+        return SharedElementNode(model)
     }
 
-    private fun registerProperty(property: KtProperty, sharedType: SharedType): SharedElementNode1 {
+    private fun registerProperty(property: KtProperty, sharedType: SharedType): SharedElementNode {
         val stub = property.stub
         val model = SharedElementModel(property.name, sharedType, stub)
         println(property.name)
 
-        return SharedElementNode1(model)
+        return SharedElementNode(model)
     }
 
-    private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): SharedElementNode1 {
+    private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): SharedElementNode {
         val stub = function.stub
 
         val model = SharedElementModel(function.name, sharedType, stub)
-        return SharedElementNode1(model)
+        return SharedElementNode(model)
     }
 
-    private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedElementNode1 {
+    private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedElementNode {
         val stub = classDeclaration.stub
 
         val model = SharedElementModel(classDeclaration.name, sharedType, stub)
 
-        val node = SharedElementNode1(model)
+        val node = SharedElementNode(model)
 
         val nested = classDeclaration.body?.children
 
@@ -277,12 +277,12 @@ class SharedTreeProvider {
     private fun registerObject(
         objectDeclaration: KtObjectDeclaration,
         sharedType: SharedType
-    ): SharedElementNode1 {
+    ): SharedElementNode {
         val stub = objectDeclaration.stub
 
         val model = SharedElementModel(objectDeclaration.name, sharedType, stub)
 
-        val node = SharedElementNode1(model)
+        val node = SharedElementNode(model)
 
         val nested = objectDeclaration.body?.children
 

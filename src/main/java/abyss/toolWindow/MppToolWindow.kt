@@ -2,12 +2,12 @@ package abyss.toolWindow
 
 import abyss.extensionPoints.SharedElementsTopics
 import abyss.extensionPoints.SharedElementsTopicsNotifier
+import abyss.view.AbyssTreeCellRenderer
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.messages.MessageBus
-import javax.naming.Context
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.ImageIcon
@@ -29,27 +29,12 @@ class MppToolWindow (private val project: Project, private val toolWindow: ToolW
 
     private fun subscribe(bus: MessageBus) {
         val bus = project.messageBus
-        bus.connect().subscribe(SharedElementsTopics.CHANGE_ACTION_TOPIC, object : SharedElementsTopicsNotifier {
-            override fun beforeAction(context: Context) {
-                // Process 'before action' event.
-            }
-
-            override fun afterAction(context: Context) {
-                // Process 'after action' event.
-            }
-
-            override fun stringUpdated(string: String) {
-//                val label = JLabel()
-//                label.text = string
-//                content.add(label)
-//                println("string displayed")
-            }
-
+        bus.connect().subscribe(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC, object : SharedElementsTopicsNotifier {
             override fun sharedElementsTreeUpdated(tree: Tree) {
                 tree.run {
                     isRootVisible = false
                     selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-                    cellRenderer = makeTreeCellRenderer()
+                    cellRenderer = AbyssTreeCellRenderer(this)
 
                     addTreeSelectionListener { event ->
                         //                    val source = event.source as JTree

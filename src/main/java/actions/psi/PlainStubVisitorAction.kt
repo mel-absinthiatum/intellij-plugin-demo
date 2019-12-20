@@ -52,14 +52,14 @@ class PlainStubVisitorAction : AnAction() {
         }
     }
 
-    private fun iterateAllZones(project: Project): List<MppAuthorityZoneNode> {
+    private fun iterateAllZones(project: Project): List<OldMppAuthorityZoneNode> {
         val mppAuthorityZones = MppAuthorityManager().provideAuthorityZonesForProject(project)
         return mppAuthorityZones.mapNotNull { authorityZone ->
             val list = iterateTree(authorityZone, project)
 
             if (list.isNotEmpty()) {
                 val mppNodeModel = MppAuthorityZoneModel(authorityZone.commonModule.name)
-                val node = MppAuthorityZoneNode(mppNodeModel)
+                val node = OldMppAuthorityZoneNode(mppNodeModel)
                 node.addChildren(list)
                 node
             } else {
@@ -83,7 +83,7 @@ class PlainStubVisitorAction : AnAction() {
         }
     }
 
-    private fun iterateTree(authorityZone: MppAuthorityZone, project: Project): List<PackageNode> {
+    private fun iterateTree(authorityZone: MppAuthorityZone, project: Project): List<OldPackageNode> {
         val sourceRoots = authorityZone.commonModule.sourceRoots
 
         val psiFiles = mutableListOf<PsiFile>()
@@ -102,7 +102,7 @@ class PlainStubVisitorAction : AnAction() {
 
             if (children.isNotEmpty()) {
                 val fileNodeModel = PackageModel(psiFile.name, psiFile.virtualFile)
-                val node = PackageNode(fileNodeModel)
+                val node = OldPackageNode(fileNodeModel)
                 node.addChildren(children)
                 node
             } else {

@@ -21,7 +21,7 @@ data class PackageModel(
 ): PackageModelInterface, NodeModel
 
 
-class PackageNode (
+class OldPackageNode (
     val model: PackageModel,
     val children: MutableList<SharedItemNode>,
     override var nodeParent: NodeInterface?
@@ -58,7 +58,7 @@ class PackageNode (
 
 class ModuleNode(
     val model: String,
-    val children: MutableList<PackageNode>,
+    val children: MutableList<OldPackageNode>,
     override var nodeParent: NodeInterface?
 ): NodeInterface {
     override fun children(): Enumeration<out TreeNode> = children.toEnumeration()
@@ -112,7 +112,7 @@ class ModuleNode(
 
 class MPackageNode(
     val model: PackageContainable,
-    val sharedChildren: MutableList<PackageNode>,
+    val sharedChildren: MutableList<OldPackageNode>,
     val nodeParent: TreeNode?
 ): MutableTreeNode {
     override fun children(): Enumeration<out TreeNode> {

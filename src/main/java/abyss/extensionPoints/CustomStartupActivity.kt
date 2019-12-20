@@ -19,17 +19,20 @@ class CustomStartupActivity : StartupActivity {
         val tree = SharedTreeProvider().tree(project)
         println("tree generated")
         val myBus = project.messageBus
-        val publisher: SharedElementsTopicsNotifier = myBus.syncPublisher(SharedElementsTopics.CHANGE_ACTION_TOPIC)
+        val publisher: SharedElementsTopicsNotifier =
+            myBus.syncPublisher(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC)
         publisher.sharedElementsTreeUpdated(tree)
         println("tree published")
     }
+}
 
+class ExperimentalEventsProducer {
     private fun runTestWithCoroutine(project: Project) {
         GlobalScope.launch {
             val s = SharedTreeProvider().suspendedStringExperiment(project)
             println("string generated")
             val myBus = project.messageBus
-            val publisher: SharedElementsTopicsNotifier = myBus.syncPublisher(SharedElementsTopics.CHANGE_ACTION_TOPIC)
+            val publisher: TopicsNotifier = myBus.syncPublisher(SharedElementsTopics.EXPERIMENTAL_TOPIC)
             publisher.stringUpdated(s)
             println("string published")
         }
@@ -39,7 +42,7 @@ class CustomStartupActivity : StartupActivity {
         SharedTreeProvider().experimentString(project) { str ->
             println("string generated")
             val myBus = project.messageBus
-            val publisher: SharedElementsTopicsNotifier = myBus.syncPublisher(SharedElementsTopics.CHANGE_ACTION_TOPIC)
+            val publisher: TopicsNotifier = myBus.syncPublisher(SharedElementsTopics.EXPERIMENTAL_TOPIC)
             publisher.stringUpdated(str)
             println("string published")
         }
@@ -48,7 +51,7 @@ class CustomStartupActivity : StartupActivity {
 
     public fun doChange(project: Project, context: Context) {
         val myBus = project.messageBus
-        val publisher: SharedElementsTopicsNotifier = myBus.syncPublisher(SharedElementsTopics.CHANGE_ACTION_TOPIC)
+        val publisher: TopicsNotifier = myBus.syncPublisher(SharedElementsTopics.EXPERIMENTAL_TOPIC)
         publisher.beforeAction(context)
         try {
 
@@ -60,15 +63,20 @@ class CustomStartupActivity : StartupActivity {
 
 class SharedElementsTopics {
     companion object {
-        var CHANGE_ACTION_TOPIC: Topic<SharedElementsTopicsNotifier> =
+        var SHARED_ELEMENTS_TREE_TOPIC: Topic<SharedElementsTopicsNotifier> =
             Topic.create("custom name", SharedElementsTopicsNotifier::class.java)
+        var EXPERIMENTAL_TOPIC: Topic<TopicsNotifier> =
+            Topic.create("custom name", TopicsNotifier::class.java)
+
     }
 }
 
 interface SharedElementsTopicsNotifier {
-    fun stringUpdated(string: String)
-
     fun sharedElementsTreeUpdated(tree: Tree)
+}
+
+interface TopicsNotifier {
+    fun stringUpdated(string: String)
 
     fun beforeAction(context: Context)
 

@@ -74,7 +74,7 @@ data class ExpectOrActualModel(
     override val stub: Stub?
 ) : ExpectOrActualModelInterface, NodeModel
 
-class ExpectOrActualNode(
+class OldExpectOrActualNode(
     val model: ExpectOrActualModelInterface,
     override var nodeParent: NodeInterface?
 ): NodeInterface {
@@ -123,15 +123,15 @@ data class SharedElementModel(
 ): SharedElementModelInterface, NodeModel
 
 // TODO: notnull parent and model
-class SharedElementNode (
+class OldSharedElementNode (
     val model: SharedElementModelInterface,
     var sharedChildren: Array<ElementContainable>,
     override var nodeParent: NodeInterface?
 ): NodeInterface {
 
     // TODO: Kotlin readonly public properties
-    val nestedElementsNodes = mutableListOf<SharedElementNode>()
-    private val expectOrActualNodes = mutableListOf<ExpectOrActualNode>()
+    val nestedElementsNodes = mutableListOf<OldSharedElementNode>()
+    private val expectOrActualNodes = mutableListOf<OldExpectOrActualNode>()
 
     constructor(model: SharedElementModelInterface, parent: NodeInterface?) : this(model, arrayOf<ElementContainable>(), parent)
 //    constructor(sharedChildren: Array<ExpectOrActualModel>) : this(null, sharedChildren, null)
@@ -142,26 +142,26 @@ class SharedElementNode (
     }
 
     fun addChild(model: SharedElementModelInterface) {
-        val node = SharedElementNode(model, this)
+        val node = OldSharedElementNode(model, this)
         nestedElementsNodes.add(node)
     }
 
     fun addChild(model: ExpectOrActualModelInterface) {
-        val node = ExpectOrActualNode(model, this)
+        val node = OldExpectOrActualNode(model, this)
         expectOrActualNodes.add(node)
     }
 
-    fun addChildNode(node: SharedElementNode) {
+    fun addChildNode(node: OldSharedElementNode) {
         node.nodeParent = this
         nestedElementsNodes.add(node)
     }
 
-    fun addChildNode(node: ExpectOrActualNode) {
+    fun addChildNode(node: OldExpectOrActualNode) {
         node.nodeParent = this
         expectOrActualNodes.add(node)
     }
 
-    fun addChildren(nodes: Collection<SharedElementNode>) {
+    fun addChildren(nodes: Collection<OldSharedElementNode>) {
         nodes.forEach {
             addChildNode(it)
         }
@@ -173,11 +173,11 @@ class SharedElementNode (
 ////    { return sharedChildren.mapNotNull { model ->
 ////        // TODO
 ////        when (model) {
-////            is SharedElementModelInterface -> { SharedElementNode(model, this) }
-////            is ExpectOrActualModelInterface -> { ExpectOrActualNode(model, this) }
+////            is SharedElementModelInterface -> { OldSharedElementNode(model, this) }
+////            is ExpectOrActualModelInterface -> { OldExpectOrActualNode(model, this) }
 ////        }
 ////        null
-//////        ExpectOrActualNode(it, this)
+//////        OldExpectOrActualNode(it, this)
 //    }
 
     override fun children(): Enumeration<NodeInterface> {

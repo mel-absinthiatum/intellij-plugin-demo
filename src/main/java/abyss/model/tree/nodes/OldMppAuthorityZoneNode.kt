@@ -9,20 +9,20 @@ interface MppAuthorityZoneModelInterface {
 
 class MppAuthorityZoneModel(override val title: String): MppAuthorityZoneModelInterface, NodeModel
 
-class MppAuthorityZoneNode (
+class OldMppAuthorityZoneNode (
     var model: MppAuthorityZoneModelInterface,
     override var nodeParent: NodeInterface? = null
 ): NodeInterface {
-    val children = mutableListOf<PackageNode>()
+    val children = mutableListOf<OldPackageNode>()
 
-    fun addChildren(nodes: List<PackageNode>) {
+    fun addChildren(nodes: List<OldPackageNode>) {
         nodes.forEach {
             it.nodeParent = this
             children.add(it)
         }
     }
 
-    override fun children(): Enumeration<PackageNode> = children.toEnumeration()
+    override fun children(): Enumeration<OldPackageNode> = children.toEnumeration()
 
     override fun isLeaf(): Boolean = childCount == 0
 

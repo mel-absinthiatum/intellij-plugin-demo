@@ -28,8 +28,8 @@ package actions.psi
 
 import abyss.model.DeclarationType
 import abyss.model.SharedType
+import abyss.model.tree.nodes.OldSharedElementNode
 import abyss.model.tree.nodes.SharedElementModel
-import abyss.model.tree.nodes.SharedElementNode
 import abyss.modulesRoutines.MppAuthorityManager
 import abyss.modulesRoutines.MppAuthorityZone
 import com.intellij.openapi.actionSystem.AnAction
@@ -81,7 +81,7 @@ class StubVisitorAction : AnAction() {
     private suspend fun iterateAllZones(project: Project) {
         val mppAuthorityZones = MppAuthorityManager().provideAuthorityZonesForProject(project)
         mppAuthorityZones.forEach { authorityZone ->
-            var flow: Flow<SharedElementNode?>? = null
+            var flow: Flow<OldSharedElementNode?>? = null
             runBlocking {
 
                 flow = iterateTree(authorityZone, project)
@@ -101,7 +101,7 @@ class StubVisitorAction : AnAction() {
         }
     }
 
-    private suspend fun iterateTree(authorityZone: MppAuthorityZone, project: Project): Flow<SharedElementNode?> {
+    private suspend fun iterateTree(authorityZone: MppAuthorityZone, project: Project): Flow<OldSharedElementNode?> {
         val sourceRoots = authorityZone.commonModule.sourceRoots
 
         val psiFiles = mutableListOf<PsiFile>()
@@ -133,7 +133,7 @@ class StubVisitorAction : AnAction() {
     private suspend fun registerDeclaration(
         element: PsiFile,
         sharedType: SharedType
-    ): Flow<SharedElementNode?> = channelFlow {
+    ): Flow<OldSharedElementNode?> = channelFlow {
         //        println("register declaration method")
 
         element.acceptChildren(
@@ -171,7 +171,7 @@ class StubVisitorAction : AnAction() {
     private suspend fun registerDeclaration1(
         element: PsiElement,
         sharedType: SharedType
-    ): Flow<SharedElementNode?> = channelFlow {
+    ): Flow<OldSharedElementNode?> = channelFlow {
         //        println("register declaration method")
 
         element.acceptChildren(
@@ -198,7 +198,7 @@ class StubVisitorAction : AnAction() {
     private fun registerNestedDeclaration(
         element: Array<PsiElement>,
         sharedType: SharedType
-    ): Flow<SharedElementNode> = channelFlow {
+    ): Flow<OldSharedElementNode> = channelFlow {
         //        println("register nested declaration")
         element.forEach {
             it.accept(
@@ -240,30 +240,30 @@ class StubVisitorAction : AnAction() {
 //    }
 
 
-    private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): SharedElementNode {
+    private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): OldSharedElementNode {
         val stub = annotation.stub
         val model = SharedElementModel(annotation.name, sharedType, stub)
-        return SharedElementNode(model, null)
+        return OldSharedElementNode(model, null)
     }
 
-    private fun registerProperty(property: KtProperty, sharedType: SharedType): SharedElementNode {
+    private fun registerProperty(property: KtProperty, sharedType: SharedType): OldSharedElementNode {
         val stub = property.stub
         val actuals = property.actualsForExpected()
         val model = SharedElementModel(property.name, sharedType, stub)
-        return SharedElementNode(model, null)
+        return OldSharedElementNode(model, null)
     }
 
-    private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): SharedElementNode {
+    private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): OldSharedElementNode {
         val stub = function.stub
         val model = SharedElementModel(function.name, sharedType, stub)
-        return SharedElementNode(model, null)
+        return OldSharedElementNode(model, null)
     }
 
-    private suspend fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedElementNode {
+    private suspend fun registerClass(classDeclaration: KtClass, sharedType: SharedType): OldSharedElementNode {
         val stub = classDeclaration.stub
         val model = SharedElementModel(classDeclaration.name, sharedType, stub)
 
-        val node = SharedElementNode(model, null)
+        val node = OldSharedElementNode(model, null)
 
         val nested = classDeclaration.body?.children
 
@@ -282,11 +282,11 @@ class StubVisitorAction : AnAction() {
     private suspend fun registerObject(
         objectDeclaration: KtObjectDeclaration,
         sharedType: SharedType
-    ): SharedElementNode {
+    ): OldSharedElementNode {
         val stub = objectDeclaration.stub
 
         val model = SharedElementModel(objectDeclaration.name, sharedType, stub)
-        val node = SharedElementNode(model, null)
+        val node = OldSharedElementNode(model, null)
 
         val nested = objectDeclaration.body?.children
 

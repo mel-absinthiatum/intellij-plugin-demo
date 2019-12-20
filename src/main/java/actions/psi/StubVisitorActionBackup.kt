@@ -29,7 +29,7 @@ package actions.psi
 import abyss.model.DeclarationType
 import abyss.model.SharedType
 import abyss.model.tree.nodes.ExpectOrActualModel
-import abyss.model.tree.nodes.ExpectOrActualNode
+import abyss.model.tree.nodes.OldExpectOrActualNode
 import abyss.modulesRoutines.MppAuthorityManager
 import abyss.modulesRoutines.MppAuthorityZone
 import com.intellij.openapi.actionSystem.AnAction
@@ -120,7 +120,7 @@ class StubVisitorActionBackup : AnAction() {
         mppAuthorityZones.forEach { authorityZone ->
             val flow = iterateTree(authorityZone, project)
             flow.collect {
-                if (it is ExpectOrActualNode) {
+                if (it is OldExpectOrActualNode) {
                     println("__ collected ${it.model.stub}")
                 }
                 println("collected: $it")
@@ -339,7 +339,7 @@ class StubVisitorActionBackup : AnAction() {
         val stub = annotation.stub
         val model = ExpectOrActualModel(annotation, sharedType, stub)
         println(annotation.name)
-        return ExpectOrActualNode(model, null)
+        return OldExpectOrActualNode(model, null)
     }
 
     private fun registerProperty(property: KtProperty, sharedType: SharedType): TreeNode {
@@ -347,13 +347,13 @@ class StubVisitorActionBackup : AnAction() {
         val model = ExpectOrActualModel(property, sharedType, stub)
         println(property.name)
 
-        return ExpectOrActualNode(model, null)
+        return OldExpectOrActualNode(model, null)
     }
 
     private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): TreeNode {
         val stub = function.stub
         val model = ExpectOrActualModel(function, sharedType, stub)
-        return  ExpectOrActualNode(model, null)
+        return  OldExpectOrActualNode(model, null)
     }
 
     private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): TreeNode {
@@ -362,7 +362,7 @@ class StubVisitorActionBackup : AnAction() {
         val model = ExpectOrActualModel(classDeclaration, sharedType, stub)
         println(classDeclaration.name)
 
-        return  ExpectOrActualNode(model, null)
+        return  OldExpectOrActualNode(model, null)
 
     }
 
@@ -370,7 +370,7 @@ class StubVisitorActionBackup : AnAction() {
         val stub = objectDeclaration.stub
 
         val model = ExpectOrActualModel(objectDeclaration, sharedType, stub)
-        return ExpectOrActualNode(model, null)
+        return OldExpectOrActualNode(model, null)
 
     }
 

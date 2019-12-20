@@ -97,21 +97,21 @@ interface SharedElementContent: CustomNodeInterface
 
 
 
-class ExpectOrActualNode1(model: ExpectOrActualModel)
-    : TemplateLeaf<ExpectOrActualModel, SharedElementNode1>(model),
+class ExpectOrActualNode(model: ExpectOrActualModel)
+    : TemplateLeaf<ExpectOrActualModel, SharedElementNode>(model),
     SharedElementContent
 
-class SharedElementNode1(model: SharedElementModel)
+class SharedElementNode(model: SharedElementModel)
     : TemplateNode<SharedElementModel, CustomNodeInterface, SharedElementContent>(model),
     SharedElementContent
 
-class PackageNode1(model: PackageModel)
-    : TemplateNode<PackageModel, MppAuthorityZoneNode1, SharedElementNode1>(model)
+class PackageNode(model: PackageModel)
+    : TemplateNode<PackageModel, MppAuthorityZoneNode, SharedElementNode>(model)
 
-class MppAuthorityZoneNode1(model: MppAuthorityZoneModel)
-    : TemplateNode<MppAuthorityZoneModel, RootNode, PackageNode1>(model)
+class MppAuthorityZoneNode(model: MppAuthorityZoneModel)
+    : TemplateNode<MppAuthorityZoneModel, RootNode, PackageNode>(model)
 
-class RootNode: TemplateRootNode<NodeModel, MppAuthorityZoneNode1>(rootNodeModel)
+class RootNode: TemplateRootNode<NodeModel, MppAuthorityZoneNode>(rootNodeModel)
 
 
 object rootNodeModel: NodeModel
