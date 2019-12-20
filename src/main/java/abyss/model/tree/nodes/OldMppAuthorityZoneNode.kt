@@ -1,13 +1,18 @@
 package abyss.model.tree.nodes
 
+import abyss.imageManager.CustomIcons
 import java.util.*
+import javax.swing.Icon
 import javax.swing.tree.TreeNode
 
 interface MppAuthorityZoneModelInterface {
     val title: String
 }
 
-class MppAuthorityZoneModel(override val title: String): MppAuthorityZoneModelInterface, NodeModel
+class MppAuthorityZoneModel(override val title: String): MppAuthorityZoneModelInterface, NodeModel {
+    override fun getLabelText(): String = title
+    override fun getIcon(): Icon? = CustomIcons.Nodes.Root
+}
 
 class OldMppAuthorityZoneNode (
     var model: MppAuthorityZoneModelInterface,

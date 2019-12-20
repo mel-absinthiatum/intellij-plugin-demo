@@ -1,8 +1,7 @@
 package abyss.view
 
 
-import abyss.imageManager.CustomIcons
-import abyss.model.tree.nodes.*
+import abyss.model.tree.nodes.TemplateNode
 import com.intellij.ui.JBDefaultTreeCellRenderer
 import com.intellij.ui.components.JBLabel
 import java.awt.Component
@@ -15,19 +14,22 @@ class AbyssTreeCellRenderer(tree: JTree) : JBDefaultTreeCellRenderer(tree) {
                                               leaf: Boolean, row: Int, hasFocus: Boolean): Component {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
 
-        when (value) {
-            is RootNode -> { return this }
-            is MppAuthorityZoneNode -> { return makeComponent("#authority zone", CustomIcons.Nodes.Root) }
-            is PackageNode -> { return makeComponent(value.model.title, CustomIcons.Nodes.File) }
-            is SharedElementNode -> { return makeComponent(value.model.name ?: "#error", CustomIcons.Nodes.Annotation) }
-            is ExpectOrActualNode -> { return makeComponent(value.model.type.toString(), CustomIcons.Nodes.Actual) }
+        if (value is TemplateNode<*, *, *>) {
+            return makeComponent(value.model.getLabelText(), value.model.getIcon())
         }
+//        when (value) {
+//            is RootNode -> { return this }
+//            is MppAuthorityZoneNode -> { return makeComponent("#authority zone", CustomIcons.Nodes.Root) }
+//            is PackageNode -> { return makeComponent(value.model.getLabelText, CustomIcons.Nodes.File) }
+//            is SharedElementNode -> { return makeComponent(value.model.name ?: "#error", CustomIcons.Nodes.Annotation) }
+//            is ExpectOrActualNode -> { return makeComponent(value.model.type.toString(), CustomIcons.Nodes.Actual) }
+//        }
 
         return this
     }
 
 
-    private fun makeComponent(title: String, icon: Icon): JBLabel {
+    private fun makeComponent(title: String, icon: Icon?): JBLabel {
         val label = JBLabel()
         label.text = title
         label.icon = icon

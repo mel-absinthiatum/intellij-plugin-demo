@@ -1,6 +1,7 @@
 package actions.psi
 
 
+import abyss.model.DeclarationType
 import abyss.model.SharedType
 import abyss.model.tree.nodes.*
 import abyss.modulesRoutines.MppAuthorityManager
@@ -166,23 +167,35 @@ class PlainStubVisitorAction : AnAction() {
             else -> null
         }
         if (declaration is KtDeclaration) {
-            node?.addChild(makeExpectNodeForElement(declaration))
+            val expectDeclarationNode = makeExpectNodeForElement(declaration)
+            if (expectDeclarationNode != null) {
+                node?.addChild(expectDeclarationNode)
+            }
             node?.addChildren(makeActualNodesForElement(declaration))
         }
         return node
     }
 
 
-    private fun makeExpectNodeForElement(element: PsiElement): ExpectOrActuaItemlNode {
-        val model = ExpectOrActualModel(element, SharedType.EXPECTED, null)
+    private fun makeExpectNodeForElement(element: KtDeclaration): ExpectOrActuaItemlNode? {
+        if (element.name == null) {
+            assert(false) { "Empty element name." }
+            return null
+        }
+        val model = ExpectOrActualModel(element.name!!, element, SharedType.EXPECTED, null)
         return ExpectOrActuaItemlNode(model)
     }
 
     private fun makeActualNodesForElement(element: KtDeclaration): List<ExpectOrActuaItemlNode> {
         val actuals = element.actualsForExpected()
-        return actuals.map {
-            val model = ExpectOrActualModel(it, SharedType.ACTUAL, null)
-            ExpectOrActuaItemlNode(model)
+        return actuals.mapNotNull {
+            if (it.name == null) {
+                assert(false) { "Empty element name." }
+                null
+            } else {
+                val model = ExpectOrActualModel(it.name!!, it, SharedType.ACTUAL, null)
+                ExpectOrActuaItemlNode(model)
+            }
         }
     }
 
@@ -190,14 +203,14 @@ class PlainStubVisitorAction : AnAction() {
     private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): SharedItemNode {
         val stub = annotation.stub
 
-        val model = SharedElementModel(annotation.name, sharedType, stub)
+        val model = SharedElementModel(annotation.name, DeclarationType.ANNOTATION, stub)
         println(annotation.name)
         return SharedItemNode(model)
     }
 
     private fun registerProperty(property: KtProperty, sharedType: SharedType): SharedItemNode {
         val stub = property.stub
-        val model = SharedElementModel(property.name, sharedType, stub)
+        val model = SharedElementModel(property.name, DeclarationType.PROPERTY, stub)
         println(property.name)
 
         return SharedItemNode(model)
@@ -206,14 +219,14 @@ class PlainStubVisitorAction : AnAction() {
     private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): SharedItemNode {
         val stub = function.stub
 
-        val model = SharedElementModel(function.name, sharedType, stub)
+        val model = SharedElementModel(function.name, DeclarationType.NAMED_FUNCTION, stub)
         return SharedItemNode(model)
     }
 
     private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedItemNode {
         val stub = classDeclaration.stub
 
-        val model = SharedElementModel(classDeclaration.name, sharedType, stub)
+        val model = SharedElementModel(classDeclaration.name, DeclarationType.CLASS, stub)
 
         val node = SharedItemNode(model)
 
@@ -233,7 +246,7 @@ class PlainStubVisitorAction : AnAction() {
     ): SharedItemNode {
         val stub = objectDeclaration.stub
 
-        val model = SharedElementModel(objectDeclaration.name, sharedType, stub)
+        val model = SharedElementModel(objectDeclaration.name, DeclarationType.OBJECT, stub)
 
         val node = SharedItemNode(model)
 

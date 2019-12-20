@@ -19,7 +19,7 @@ class CustomIcons {
             val File = load("/abyss/file.png")
             val Annotation = load("/abyss/annotation.png")
             val Property = load("/abyss/property.png")
-            val Function = load("/abyss/function.png")
+            val Function = load("/abyss/func.png")
             val Class = load("/abyss/class.png")
             val Object = load("/abyss/obj.png")
             val Expect = load("/abyss/expect.png")
@@ -33,9 +33,3 @@ class CustomIcons {
         }
     }
 }
-
-
-// TODO: Explore default icons.
-//Nodes
-//   /** 16x16 */ public static final Icon Class = load("/nodes/class.svg");
-//          /** 16x16 */ public static final Icon Annotationtype = load("/nodes/annotationtype.svg");

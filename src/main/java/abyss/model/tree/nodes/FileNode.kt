@@ -1,7 +1,9 @@
 package abyss.model.tree.nodes
 
+import abyss.imageManager.CustomIcons
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.*
+import javax.swing.Icon
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 
@@ -18,7 +20,12 @@ interface PackageModelInterface: PackageContainable {
 data class PackageModel(
     override val title: String,
     override val virtualFile: VirtualFile
-): PackageModelInterface, NodeModel
+): PackageModelInterface, NodeModel {
+
+    override fun getLabelText(): String = title
+
+    override fun getIcon(): Icon? = CustomIcons.Nodes.File
+}
 
 
 class OldPackageNode (

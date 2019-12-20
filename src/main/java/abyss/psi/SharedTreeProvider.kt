@@ -1,6 +1,7 @@
 package abyss.psi
 
 
+import abyss.model.DeclarationType
 import abyss.model.SharedType
 import abyss.model.tree.nodes.*
 import abyss.modulesRoutines.MppAuthorityManager
@@ -213,23 +214,35 @@ class SharedTreeProvider {
             else -> null
         }
         if (declaration is KtDeclaration) {
-            node?.add(makeExpectNodeForElement(declaration))
+            val expectDeclarationNode = makeExpectNodeForElement(declaration)
+            if (expectDeclarationNode != null) {
+                node?.add(expectDeclarationNode)
+            }
             node?.add(makeActualNodesForElement(declaration))
         }
         return node
     }
 
 
-    private fun makeExpectNodeForElement(element: PsiElement): ExpectOrActualNode {
-        val model = ExpectOrActualModel(element, SharedType.EXPECTED, null)
+    private fun makeExpectNodeForElement(element: KtDeclaration): ExpectOrActualNode? {
+        if (element.name == null) {
+            assert(false) { "Empty element name." }
+            return null
+        }
+        val model = ExpectOrActualModel(element.name!!, element, SharedType.EXPECTED, null)
         return ExpectOrActualNode(model)
     }
 
     private fun makeActualNodesForElement(element: KtDeclaration): List<ExpectOrActualNode> {
         val actuals = element.actualsForExpected()
-        return actuals.map {
-            val model = ExpectOrActualModel(it, SharedType.ACTUAL, null)
-            ExpectOrActualNode(model)
+        return actuals.mapNotNull {
+            if (it.name == null) {
+                assert(false) { "Empty element name." }
+                null
+            } else {
+                val model = ExpectOrActualModel(it.name!!, it, SharedType.ACTUAL, null)
+                ExpectOrActualNode(model)
+            }
         }
     }
 
@@ -237,14 +250,14 @@ class SharedTreeProvider {
     private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): SharedElementNode {
         val stub = annotation.stub
 
-        val model = SharedElementModel(annotation.name, sharedType, stub)
+        val model = SharedElementModel(annotation.name, DeclarationType.ANNOTATION, stub)
         println(annotation.name)
         return SharedElementNode(model)
     }
 
     private fun registerProperty(property: KtProperty, sharedType: SharedType): SharedElementNode {
         val stub = property.stub
-        val model = SharedElementModel(property.name, sharedType, stub)
+        val model = SharedElementModel(property.name, DeclarationType.PROPERTY, stub)
         println(property.name)
 
         return SharedElementNode(model)
@@ -253,14 +266,14 @@ class SharedTreeProvider {
     private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): SharedElementNode {
         val stub = function.stub
 
-        val model = SharedElementModel(function.name, sharedType, stub)
+        val model = SharedElementModel(function.name, DeclarationType.NAMED_FUNCTION, stub)
         return SharedElementNode(model)
     }
 
     private fun registerClass(classDeclaration: KtClass, sharedType: SharedType): SharedElementNode {
         val stub = classDeclaration.stub
 
-        val model = SharedElementModel(classDeclaration.name, sharedType, stub)
+        val model = SharedElementModel(classDeclaration.name, DeclarationType.CLASS, stub)
 
         val node = SharedElementNode(model)
 
@@ -280,7 +293,7 @@ class SharedTreeProvider {
     ): SharedElementNode {
         val stub = objectDeclaration.stub
 
-        val model = SharedElementModel(objectDeclaration.name, sharedType, stub)
+        val model = SharedElementModel(objectDeclaration.name, DeclarationType.OBJECT, stub)
 
         val node = SharedElementNode(model)
 

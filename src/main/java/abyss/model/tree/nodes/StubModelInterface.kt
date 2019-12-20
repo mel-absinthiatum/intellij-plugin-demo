@@ -1,12 +1,14 @@
 package abyss.model.tree.nodes
 
+import abyss.imageManager.CustomIcons
+import abyss.model.DeclarationType
 import abyss.model.SharedType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.Stub
 import java.net.URL
 import java.util.*
+import javax.swing.Icon
 import javax.swing.tree.TreeNode
-
 
 
 interface SharedStubModelInterface {
@@ -14,11 +16,13 @@ interface SharedStubModelInterface {
     val sharedChildren: Collection<SharedStubModelInterface>
     val url: URL
 }
-interface OldNodeInterface: TreeNode {
+
+interface OldNodeInterface : TreeNode {
     var nodeParent: OldNodeInterface?
 
 }
-interface NodeInterface: TreeNode {
+
+interface NodeInterface : TreeNode {
     var nodeParent: NodeInterface?
 }
 
@@ -27,12 +31,14 @@ class Node(
     val title: String,
     var sharedChildren: Array<String>,
     override var nodeParent: OldNodeInterface?
-): OldNodeInterface  {
+) : OldNodeInterface {
 
     constructor(title: String, parent: OldNodeInterface?) : this(title, arrayOf(), parent)
     constructor(sharedChildren: Array<String>) : this("", sharedChildren, null)
 
-    override fun children(): Enumeration<OldNodeInterface> { return sharedChildren.map { Node(it, this) }.toEnumeration()}
+    override fun children(): Enumeration<OldNodeInterface> {
+        return sharedChildren.map { Node(it, this) }.toEnumeration()
+    }
 
     override fun isLeaf(): Boolean {
         return childCount == 0
@@ -62,24 +68,35 @@ class Node(
 }
 
 
-interface ExpectOrActualModelInterface: ElementContainable {
+interface ExpectOrActualModelInterface : ElementContainable {
+    val name: String
     val psi: PsiElement
     val type: SharedType
     val stub: Stub?
 }
 
 data class ExpectOrActualModel(
+    override val name: String,
     override val psi: PsiElement,
     override val type: SharedType,
     override val stub: Stub?
-) : ExpectOrActualModelInterface, NodeModel
+) : ExpectOrActualModelInterface, NodeModel {
+    override fun getLabelText(): String = name
+
+    override fun getIcon(): Icon? = when (type) {
+        SharedType.EXPECTED -> CustomIcons.Nodes.Expect
+        SharedType.ACTUAL -> CustomIcons.Nodes.Actual
+    }
+}
 
 class OldExpectOrActualNode(
     val model: ExpectOrActualModelInterface,
     override var nodeParent: NodeInterface?
-): NodeInterface {
+) : NodeInterface {
 
-    override fun children(): Enumeration<NodeInterface> { return emptyEnumeration() }
+    override fun children(): Enumeration<NodeInterface> {
+        return emptyEnumeration()
+    }
 
     override fun isLeaf(): Boolean {
         return true
@@ -110,30 +127,48 @@ class OldExpectOrActualNode(
 
 interface ElementContainable
 
-interface SharedElementModelInterface: ElementContainable, PackageContainable {
+interface SharedElementModelInterface : ElementContainable, PackageContainable {
     val name: String?
-    val type: SharedType
+    val type: DeclarationType
     val stub: Stub?
 }
 
 data class SharedElementModel(
     override val name: String?,
-    override val type: SharedType,
+    override val type: DeclarationType,
     override val stub: Stub?
-): SharedElementModelInterface, NodeModel
+) : SharedElementModelInterface, NodeModel {
+
+    override fun getLabelText(): String {
+        return name ?: "#error"
+    }
+
+    override fun getIcon(): Icon? = when (type) {
+        DeclarationType.ANNOTATION -> CustomIcons.Nodes.Annotation
+        DeclarationType.CLASS -> CustomIcons.Nodes.Class
+        DeclarationType.OBJECT -> CustomIcons.Nodes.Object
+        DeclarationType.PROPERTY -> CustomIcons.Nodes.Property
+        DeclarationType.NAMED_FUNCTION -> CustomIcons.Nodes.Function
+        DeclarationType.UNRESOLVED -> null
+    }
+}
 
 // TODO: notnull parent and model
-class OldSharedElementNode (
+class OldSharedElementNode(
     val model: SharedElementModelInterface,
     var sharedChildren: Array<ElementContainable>,
     override var nodeParent: NodeInterface?
-): NodeInterface {
+) : NodeInterface {
 
     // TODO: Kotlin readonly public properties
     val nestedElementsNodes = mutableListOf<OldSharedElementNode>()
     private val expectOrActualNodes = mutableListOf<OldExpectOrActualNode>()
 
-    constructor(model: SharedElementModelInterface, parent: NodeInterface?) : this(model, arrayOf<ElementContainable>(), parent)
+    constructor(model: SharedElementModelInterface, parent: NodeInterface?) : this(
+        model,
+        arrayOf<ElementContainable>(),
+        parent
+    )
 //    constructor(sharedChildren: Array<ExpectOrActualModel>) : this(null, sharedChildren, null)
 
     init {
@@ -185,7 +220,6 @@ class OldSharedElementNode (
         list.addAll(expectOrActualNodes)
         return list.toEnumeration()
     }
-
 
 
     override fun isLeaf(): Boolean {

@@ -242,26 +242,26 @@ class StubVisitorAction : AnAction() {
 
     private fun registerAnnotation(annotation: KtAnnotation, sharedType: SharedType): OldSharedElementNode {
         val stub = annotation.stub
-        val model = SharedElementModel(annotation.name, sharedType, stub)
+        val model = SharedElementModel(annotation.name, DeclarationType.ANNOTATION, stub)
         return OldSharedElementNode(model, null)
     }
 
     private fun registerProperty(property: KtProperty, sharedType: SharedType): OldSharedElementNode {
         val stub = property.stub
         val actuals = property.actualsForExpected()
-        val model = SharedElementModel(property.name, sharedType, stub)
+        val model = SharedElementModel(property.name, DeclarationType.PROPERTY, stub)
         return OldSharedElementNode(model, null)
     }
 
     private fun registerNamedFunction(function: KtNamedFunction, sharedType: SharedType): OldSharedElementNode {
         val stub = function.stub
-        val model = SharedElementModel(function.name, sharedType, stub)
+        val model = SharedElementModel(function.name, DeclarationType.NAMED_FUNCTION, stub)
         return OldSharedElementNode(model, null)
     }
 
     private suspend fun registerClass(classDeclaration: KtClass, sharedType: SharedType): OldSharedElementNode {
         val stub = classDeclaration.stub
-        val model = SharedElementModel(classDeclaration.name, sharedType, stub)
+        val model = SharedElementModel(classDeclaration.name, DeclarationType.CLASS, stub)
 
         val node = OldSharedElementNode(model, null)
 
@@ -285,7 +285,7 @@ class StubVisitorAction : AnAction() {
     ): OldSharedElementNode {
         val stub = objectDeclaration.stub
 
-        val model = SharedElementModel(objectDeclaration.name, sharedType, stub)
+        val model = SharedElementModel(objectDeclaration.name, DeclarationType.OBJECT, stub)
         val node = OldSharedElementNode(model, null)
 
         val nested = objectDeclaration.body?.children

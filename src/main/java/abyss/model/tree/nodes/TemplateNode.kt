@@ -1,8 +1,14 @@
 package abyss.model.tree.nodes
 
 import java.util.*
+import javax.swing.Icon
 import javax.swing.tree.TreeNode
 
+
+interface NodeModel {
+    fun getLabelText(): String
+    fun getIcon(): Icon?
+}
 
 interface CustomNodeInterface: TreeNode {
     fun removeNodeParent()
@@ -19,8 +25,6 @@ interface TemplateNodeInterface<M: NodeModel, P: CustomNodeInterface, C: CustomN
 
     fun remove(node: C)
 }
-
-interface NodeModel
 
 abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeInterface>(
     override var model: M,
@@ -114,5 +118,13 @@ class MppAuthorityZoneNode(model: MppAuthorityZoneModel)
 class RootNode: TemplateRootNode<NodeModel, MppAuthorityZoneNode>(rootNodeModel)
 
 
-object rootNodeModel: NodeModel
+object rootNodeModel: NodeModel {
+    override fun getLabelText(): String {
+        return ""
+    }
+
+    override fun getIcon(): Icon? {
+        return null
+    }
+}
 
