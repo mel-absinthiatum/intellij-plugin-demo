@@ -3,6 +3,7 @@ package abyss.extensionPoints
 import abyss.psi.SharedTreeProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
+import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.messages.Topic
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -11,7 +12,16 @@ import javax.naming.Context
 class CustomStartupActivity : StartupActivity {
     override fun runActivity(project: Project) {
         println("My project started!!! WOW! ${project.name}")
-        runTestWithCoroutine(project)
+        launchTreeUpdating(project)
+    }
+
+    private fun launchTreeUpdating(project: Project) {
+        val tree = SharedTreeProvider().tree(project)
+        println("tree generated")
+        val myBus = project.messageBus
+        val publisher: SharedElementsTopicsNotifier = myBus.syncPublisher(SharedElementsTopics.CHANGE_ACTION_TOPIC)
+        publisher.sharedElementsTreeUpdated(tree)
+        println("tree published")
     }
 
     private fun runTestWithCoroutine(project: Project) {
@@ -57,6 +67,8 @@ class SharedElementsTopics {
 
 interface SharedElementsTopicsNotifier {
     fun stringUpdated(string: String)
+
+    fun sharedElementsTreeUpdated(tree: Tree)
 
     fun beforeAction(context: Context)
 

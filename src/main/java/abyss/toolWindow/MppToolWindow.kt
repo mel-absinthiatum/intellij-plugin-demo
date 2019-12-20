@@ -2,17 +2,19 @@ package abyss.toolWindow
 
 import abyss.extensionPoints.SharedElementsTopics
 import abyss.extensionPoints.SharedElementsTopicsNotifier
-import abyss.psi.SharedItemsStubsProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
-import com.intellij.ui.components.Label
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.treeStructure.Tree
+import com.intellij.util.messages.MessageBus
 import javax.naming.Context
+import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.ImageIcon
-import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.TreeCellRenderer
+import javax.swing.tree.TreeSelectionModel
 
 class MppToolWindow (private val project: Project, private val toolWindow: ToolWindow) {
     val content: JPanel
@@ -20,22 +22,12 @@ class MppToolWindow (private val project: Project, private val toolWindow: ToolW
     init {
         val panel = JPanel()
         panel.layout = BoxLayout(panel, BoxLayout.LINE_AXIS)
-//        createToolWindowTree()
-//        val customTree = createToolWindowTree()
-//
-//        val scrollPane = JBScrollPane(customTree)
-//
-//        scrollPane.border = BorderFactory.createEmptyBorder()
-//        panel.add(scrollPane)
+        subscribe(project.messageBus)
 
         content = panel
-        content.add(Label("ajdfgnai"))
-        showTestLabel()
-
     }
 
-    private fun showTestLabel() {
-        //        ComponentManagerImpl(null).messageBus
+    private fun subscribe(bus: MessageBus) {
         val bus = project.messageBus
         bus.connect().subscribe(SharedElementsTopics.CHANGE_ACTION_TOPIC, object : SharedElementsTopicsNotifier {
             override fun beforeAction(context: Context) {
@@ -47,41 +39,35 @@ class MppToolWindow (private val project: Project, private val toolWindow: ToolW
             }
 
             override fun stringUpdated(string: String) {
-                val label = JLabel()
-                label.text = string
-                content.add(label)
-                println("string displayed")
+//                val label = JLabel()
+//                label.text = string
+//                content.add(label)
+//                println("string displayed")
+            }
+
+            override fun sharedElementsTreeUpdated(tree: Tree) {
+                tree.run {
+                    isRootVisible = false
+                    selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+                    cellRenderer = makeTreeCellRenderer()
+
+                    addTreeSelectionListener { event ->
+                        //                    val source = event.source as JTree
+//                    val node = source.lastSelectedPathComponent as DefaultMutableTreeNode?
+//                    val obj = node?.userObject as TreeNodeContent?
+//                    obj?.action?.invoke()
+                        println("Cliked")
+                    }
+                }
+
+                val scrollPane = JBScrollPane(tree)
+
+                scrollPane.border = BorderFactory.createEmptyBorder()
+                content.add(scrollPane)
             }
         })
     }
 
-    private fun createToolWindowTree() {
-        SharedItemsStubsProvider().getSharedItems(project){
-
-        }
-//        SharedItemsProvider().getSharedItems(project) { treeModel ->
-//            val toolWindowTree = AbyssTreeProvider().tree(treeModel)
-//
-//            toolWindowTree.run {
-//                isRootVisible = false
-//                selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-//                cellRenderer = makeTreeCellRenderer()
-//
-//                addTreeSelectionListener { event ->
-//                    val source = event.source as JTree
-//                    val node = source.lastSelectedPathComponent as DefaultMutableTreeNode?
-//                    val obj = node?.userObject as TreeNodeContent?
-//                    obj?.action?.invoke()
-//                }
-//            }
-//
-//            val scrollPane = JBScrollPane(toolWindowTree)
-//
-//            scrollPane.border = BorderFactory.createEmptyBorder()
-//            content.add(scrollPane)
-//        }
-        // TODO: use coroutines and for UI use an activity indicator.
-    }
 
     private fun makeTreeCellRenderer(): TreeCellRenderer {
         val imageIcon = ImageIcon(javaClass.getResource("/abyss/class.png"))
