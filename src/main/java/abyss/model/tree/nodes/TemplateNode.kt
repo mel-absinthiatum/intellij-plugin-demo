@@ -57,13 +57,7 @@ abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeI
 
 }
 
-
-interface SharedElementContent: CustomNodeInterface
-
-// TODO: add abstract classes for root and leaf nodes
-class ExpectOrActualNode1(model: ExpectOrActualModel)
-    : TemplateNode<ExpectOrActualModel, SharedElementNode1, Nothing>(model),
-    SharedElementContent {
+abstract class TemplateLeaf<M: NodeModel, P: CustomNodeInterface>(model: M): TemplateNode<M, P, Nothing>(model) {
     override fun getAllowsChildren(): Boolean = false
 
     override fun add(node: Nothing) { assert(false) { "Not allowed." } }
@@ -89,6 +83,24 @@ class ExpectOrActualNode1(model: ExpectOrActualModel)
     }
 }
 
+abstract class TemplateRootNode<M: NodeModel, C: CustomNodeInterface>(model: M
+): TemplateNode<M, Nothing, C>(model) {
+    override var nodeParent: Nothing? = null
+
+    override fun getParent(): TreeNode? = null
+
+    override fun removeNodeParent() {}
+}
+
+
+interface SharedElementContent: CustomNodeInterface
+
+
+
+class ExpectOrActualNode1(model: ExpectOrActualModel)
+    : TemplateLeaf<ExpectOrActualModel, SharedElementNode1>(model),
+    SharedElementContent
+
 class SharedElementNode1(model: SharedElementModel)
     : TemplateNode<SharedElementModel, CustomNodeInterface, SharedElementContent>(model),
     SharedElementContent
@@ -97,13 +109,10 @@ class PackageNode1(model: PackageModel)
     : TemplateNode<PackageModel, MppAuthorityZoneNode1, SharedElementNode1>(model)
 
 class MppAuthorityZoneNode1(model: MppAuthorityZoneModel)
-    : TemplateNode<MppAuthorityZoneModel, CustomNodeInterface, PackageNode1>(model)
+    : TemplateNode<MppAuthorityZoneModel, RootNode, PackageNode1>(model)
 
-class RootNode: TemplateNode<NodeModel, Nothing, MppAuthorityZoneNode1>(rootNodeModel) {
-    override var nodeParent: Nothing? = null
-    override fun getParent(): TreeNode? = null
-    override fun removeNodeParent() {}
-}
+class RootNode: TemplateRootNode<NodeModel, MppAuthorityZoneNode1>(rootNodeModel)
+
 
 object rootNodeModel: NodeModel
 
