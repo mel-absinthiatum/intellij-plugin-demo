@@ -135,6 +135,8 @@
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
 
+        <action id="RefreshTree" class="abyss.actions.RefreshTreeAction"/>
+
     </actions>
 
 </idea-plugin>

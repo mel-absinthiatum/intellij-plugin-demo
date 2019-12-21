@@ -2,9 +2,11 @@ package abyss.toolWindow
 
 import abyss.extensionPoints.SharedElementsTopics
 import abyss.extensionPoints.SharedElementsTopicsNotifier
+import abyss.imageManager.CustomIcons
 import abyss.model.tree.nodes.ExpectOrActualNode
 import abyss.view.AbyssTreeCellRenderer
 import com.intellij.codeInsight.highlighting.HighlightManager
+import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.colors.EditorColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
@@ -13,26 +15,43 @@ import com.intellij.openapi.editor.event.EditorMouseListener
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
-import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.AnActionButton
+import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.messages.MessageBus
+import fileSystemTree.FileSystemTreeProvider
 import org.jetbrains.kotlin.psi.psiUtil.endOffset
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
-import javax.swing.*
-import javax.swing.tree.DefaultTreeCellRenderer
-import javax.swing.tree.TreeCellRenderer
+import javax.swing.JPanel
+import javax.swing.JTree
 import javax.swing.tree.TreeSelectionModel
 
 
 class MppToolWindow(private val project: Project, private val toolWindow: ToolWindow) {
 
-
+    var sharedElementsTree: Tree
     var content: JPanel
+//    var panelD: JPanel
 
     init {
-        val panel = JPanel()
-        panel.layout = BoxLayout(panel, BoxLayout.LINE_AXIS)
+        // ToolWindowHeader
+        sharedElementsTree = Tree()
+        val fsTree = FileSystemTreeProvider.createFileSystemTree(project)
+        val refreshActionButton = AnActionButton.fromAction(ActionManager.getInstance().getAction("RefreshTree"))
+        refreshActionButton.templatePresentation.icon = CustomIcons.Actions.Refresh
+//                refreshActionButton.setShortcut(CommonActionsPanel.getCommonShortcut(CommonActionsPanel.Buttons.ALL))
+
+        val decorator = ToolbarDecorator.createDecorator(fsTree)
+            .initPosition()
+            .disableAddAction().disableRemoveAction().disableDownAction().disableUpAction()
+            .addExtraAction(refreshActionButton)
+
+
+        val panel = decorator.createPanel()
+//        panelD.layout = BoxLayout(panelD, BoxLayout.LINE_AXIS)
         subscribe(project.messageBus)
+//        toolWindow.isToHideOnEmptyContent = true
+
 
         content = panel
     }
@@ -71,7 +90,7 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
                                     null,
                                     null
                                 )
-                                val listener = currentEditor.addEditorMouseListener(object: EditorMouseListener {
+                                val listener = currentEditor.addEditorMouseListener(object : EditorMouseListener {
                                     override fun mouseClicked(event: EditorMouseEvent) {
                                         println("mouse event")
 
@@ -88,23 +107,8 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
                         }
                     }
                 }
-
-                val scrollPane = JBScrollPane(tree)
-
-                scrollPane.border = BorderFactory.createEmptyBorder()
-                content.add(scrollPane)
             }
         })
-    }
-
-
-    private fun makeTreeCellRenderer(): TreeCellRenderer {
-        val imageIcon = ImageIcon(javaClass.getResource("/abyss/class.png"))
-        val renderer = DefaultTreeCellRenderer()
-        renderer.leafIcon = imageIcon
-        renderer.borderSelectionColor = null
-        renderer.backgroundSelectionColor = null
-        return renderer
     }
 }
 
