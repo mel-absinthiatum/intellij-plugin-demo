@@ -1,5 +1,6 @@
 package abyss.extensionPoints
 
+import abyss.model.tree.nodes.MppAuthorityZoneNode
 import abyss.psi.SharedTreeProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
@@ -12,7 +13,8 @@ import javax.naming.Context
 class CustomStartupActivity : StartupActivity {
     override fun runActivity(project: Project) {
         println("My project started!!! WOW! ${project.name}")
-        launchTreeUpdating(project)
+//        launchTreeUpdating(project)
+        launchSharedElementsUpdating(project)
     }
 
     private fun launchTreeUpdating(project: Project) {
@@ -26,6 +28,18 @@ class CustomStartupActivity : StartupActivity {
             println("tree published")
         }
     }
+
+    private fun launchSharedElementsUpdating(project: Project) {
+        GlobalScope.launch {
+            val nodes = SharedTreeProvider().sharedElements(project)
+
+            val myBus = project.messageBus
+            val publisher: SharedElementsTopicsNotifier =
+                myBus.syncPublisher(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC)
+            publisher.sharedElementsUpdated(nodes)
+        }
+    }
+
 }
 
 class ExperimentalEventsProducer {
@@ -75,6 +89,8 @@ class SharedElementsTopics {
 
 interface SharedElementsTopicsNotifier {
     fun sharedElementsTreeUpdated(tree: Tree)
+
+    fun sharedElementsUpdated(nodes: List<MppAuthorityZoneNode>)
 }
 
 interface TopicsNotifier {

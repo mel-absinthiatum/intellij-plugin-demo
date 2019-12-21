@@ -20,14 +20,13 @@ import notifications.SimpleNotificationProvider
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
-import javax.swing.tree.TreeModel
 
 
 class DemoTreeModelProvider(private val toolWindow: ToolWindow, private val project: Project) {
 
     private val notificationProvider = SimpleNotificationProvider(project)
 
-    fun createToolWindowTreeModel(): TreeModel {
+    fun createToolWindowTreeModel(): DefaultTreeModel {
 
         val rootNode = makeCatalogNode("UI Demonstrations").including(
             makeCatalogNode("Popups").including(
