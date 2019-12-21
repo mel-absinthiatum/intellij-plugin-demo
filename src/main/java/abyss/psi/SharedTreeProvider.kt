@@ -20,6 +20,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.idea.stubindex.KotlinFullClassNameIndex
 import org.jetbrains.kotlin.idea.util.actualsForExpected
+import org.jetbrains.kotlin.idea.util.isEffectivelyActual
+import org.jetbrains.kotlin.idea.util.isExpectDeclaration
 import org.jetbrains.kotlin.idea.util.sourceRoots
 import org.jetbrains.kotlin.psi.*
 import kotlin.coroutines.resume
@@ -180,6 +182,7 @@ class SharedTreeProvider {
         val list = mutableListOf<SharedElementNode>()
         element.acceptChildren(
             namedDeclarationVisitor { declaration ->
+
                 val node = makeElementNode(declaration, sharedType)
                 if (node != null) {
                     list.add(node)
@@ -207,7 +210,14 @@ class SharedTreeProvider {
         return list
     }
 
-    private fun makeElementNode(declaration: PsiElement, sharedType: SharedType): SharedElementNode? {
+    private fun makeElementNode(declaration: KtDeclaration, sharedType: SharedType): SharedElementNode? {
+        val isConformingSharedDeclaration
+                = sharedType == SharedType.EXPECTED && declaration.isExpectDeclaration()
+                || sharedType == SharedType.ACTUAL && declaration.isEffectivelyActual()
+        if (!isConformingSharedDeclaration) {
+            return null
+        }
+
         val node = when (declaration) {
             is KtAnnotation -> registerAnnotation(declaration, sharedType)
             is KtClass -> registerClass(declaration, sharedType)
