@@ -59,11 +59,7 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
             override fun sharedElementsUpdated(nodes: List<MppAuthorityZoneNode>) {
                 val treeModel = sharedElementsTree.model as DefaultTreeModel
                 val rootNode = treeModel.root as RootNode
-
-                rootNode.children.forEach {
-                    rootNode.remove(it)
-                }
-
+                rootNode.remove(rootNode.children)
                 rootNode.add(nodes)
                 treeModel.reload(rootNode)
             }

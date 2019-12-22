@@ -24,6 +24,8 @@ interface TemplateNodeInterface<M: NodeModel, P: CustomNodeInterface, C: CustomN
     fun add(nodes: List<C>)
 
     fun remove(node: C)
+
+    fun remove(nodes: List<C>)
 }
 
 abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeInterface>(
@@ -38,7 +40,12 @@ abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeI
 
     override fun remove(node: C) {
         node.removeNodeParent()
-        children.remove(node)
+        children.removeIf{it == node}
+    }
+
+    override fun remove(nodes: List<C>) {
+        nodes.forEach { it.removeNodeParent() }
+        children.removeAll(nodes)
     }
 
     override fun children(): Enumeration<out TreeNode> = children.toEnumeration()
