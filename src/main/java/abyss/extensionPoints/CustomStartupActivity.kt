@@ -4,7 +4,6 @@ import abyss.model.tree.nodes.MppAuthorityZoneNode
 import abyss.psi.SharedTreeProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
-import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.messages.Topic
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -12,21 +11,8 @@ import javax.naming.Context
 
 class CustomStartupActivity : StartupActivity {
     override fun runActivity(project: Project) {
-        println("My project started!!! WOW! ${project.name}")
-//        launchTreeUpdating(project)
+        println("Project ${project.name} started")
         launchSharedElementsUpdating(project)
-    }
-
-    private fun launchTreeUpdating(project: Project) {
-        GlobalScope.launch {
-            val tree = SharedTreeProvider().tree(project)
-            println("tree generated")
-            val myBus = project.messageBus
-            val publisher: SharedElementsTopicsNotifier =
-                myBus.syncPublisher(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC)
-            publisher.sharedElementsTreeUpdated(tree)
-            println("tree published")
-        }
     }
 
     private fun launchSharedElementsUpdating(project: Project) {
@@ -64,7 +50,6 @@ class ExperimentalEventsProducer {
         }
     }
 
-
     public fun doChange(project: Project, context: Context) {
         val myBus = project.messageBus
         val publisher: TopicsNotifier = myBus.syncPublisher(SharedElementsTopics.EXPERIMENTAL_TOPIC)
@@ -88,8 +73,6 @@ class SharedElementsTopics {
 }
 
 interface SharedElementsTopicsNotifier {
-    fun sharedElementsTreeUpdated(tree: Tree)
-
     fun sharedElementsUpdated(nodes: List<MppAuthorityZoneNode>)
 }
 

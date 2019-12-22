@@ -56,9 +56,6 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
     private fun subscribe(bus: MessageBus) {
         val bus = project.messageBus
         bus.connect().subscribe(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC, object : SharedElementsTopicsNotifier {
-            override fun sharedElementsTreeUpdated(tree: Tree) {
-            }
-
             override fun sharedElementsUpdated(nodes: List<MppAuthorityZoneNode>) {
                 val treeModel = sharedElementsTree.model as DefaultTreeModel
                 val rootNode = treeModel.root as RootNode
