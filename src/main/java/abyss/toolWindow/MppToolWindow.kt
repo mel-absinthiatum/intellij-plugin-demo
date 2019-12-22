@@ -40,6 +40,9 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
         subscribe(project.messageBus)
 
         configureSharedElementsTree()
+
+        // TODO
+//        SharedElementsUpdatesManager().launchUpdatesTimer(project, 5000)
     }
 
     private fun decorator(tree: Tree): ToolbarDecorator {

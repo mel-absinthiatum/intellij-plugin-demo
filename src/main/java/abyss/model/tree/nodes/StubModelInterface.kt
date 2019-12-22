@@ -5,6 +5,7 @@ import abyss.model.DeclarationType
 import abyss.model.SharedType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.Stub
+import org.jetbrains.kotlin.idea.util.module
 import java.net.URL
 import java.util.*
 import javax.swing.Icon
@@ -81,7 +82,10 @@ data class ExpectOrActualModel(
     override val type: SharedType,
     override val stub: Stub?
 ) : ExpectOrActualModelInterface, NodeModel {
-    override fun getLabelText(): String = name
+    override fun getLabelText(): String = when (type) {
+        SharedType.EXPECTED -> psi.module?.name ?: "Common"
+        SharedType.ACTUAL -> psi.module?.name ?: "Actual"
+    }
 
     override fun getIcon(): Icon? = when (type) {
         SharedType.EXPECTED -> CustomIcons.Nodes.Expect

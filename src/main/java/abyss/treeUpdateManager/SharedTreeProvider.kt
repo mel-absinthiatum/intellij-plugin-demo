@@ -1,4 +1,4 @@
-package abyss.psi
+package abyss.treeUpdateManager
 
 
 import abyss.model.DeclarationType
