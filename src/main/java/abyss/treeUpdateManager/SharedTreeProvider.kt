@@ -184,8 +184,9 @@ class SharedTreeProvider {
         }
 
         val node = when (declaration) {
-            is KtAnnotation -> registerAnnotation(declaration)
-            is KtClass -> registerClass(declaration)
+            is KtClass -> {
+                if (declaration.isAnnotation()) registerAnnotation(declaration) else registerClass(declaration)
+            }
             is KtNamedFunction -> registerNamedFunction(declaration)
             is KtProperty -> registerProperty(declaration)
             is KtObjectDeclaration -> registerObject(declaration)
@@ -226,19 +227,15 @@ class SharedTreeProvider {
         }
     }
 
-    private fun registerAnnotation(annotation: KtAnnotation): SharedElementNode {
-        val stub = annotation.stub
-
-        val model = SharedElementModel(annotation.name, DeclarationType.ANNOTATION, stub)
-        println(annotation.name)
+    private fun registerAnnotation(annotationClass: KtClass): SharedElementNode {
+        val stub = annotationClass.stub
+        val model = SharedElementModel(annotationClass.name, DeclarationType.ANNOTATION, stub)
         return SharedElementNode(model)
     }
 
     private fun registerProperty(property: KtProperty): SharedElementNode {
         val stub = property.stub
         val model = SharedElementModel(property.name, DeclarationType.PROPERTY, stub)
-        println(property.name)
-
         return SharedElementNode(model)
     }
 
