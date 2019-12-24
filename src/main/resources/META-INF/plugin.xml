@@ -38,7 +38,7 @@
         <toolWindow id="Elements Demo" secondary="true" icon="/toolWindowResources/plus.svg" anchor="left"
                     factoryClass="toolWindow.DemoToolWindowFactory"/>
         <toolWindow id="MPP Demo" secondary="false" icon="/toolWindowResources/plus.svg" anchor="right"
-                    factoryClass="abyss.toolWindow.MppToolWindowFactory"/>
+                    factoryClass="abyss.view.toolWindow.MppToolWindowFactory"/>
 
         <postStartupActivity implementation="abyss.extensionPoints.CustomStartupActivity"/>
     </extensions>

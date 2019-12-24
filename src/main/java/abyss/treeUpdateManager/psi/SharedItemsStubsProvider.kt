@@ -1,4 +1,4 @@
-package abyss.psi
+package abyss.treeUpdateManager.psi
 
 // TODO: PsiTreeUtil References and Resolve
 // TODO: An expected declaration in the common module and its actual counterparts always have exactly

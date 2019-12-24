@@ -1,4 +1,4 @@
-package abyss.toolWindow
+package abyss.view.toolWindow
 
 import abyss.extensionPoints.SharedElementsTopics
 import abyss.extensionPoints.SharedElementsTopicsNotifier
@@ -65,6 +65,7 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
                 rootNode.remove(rootNode.children)
                 rootNode.add(nodes)
                 treeModel.reload(rootNode)
+
             }
         })
     }

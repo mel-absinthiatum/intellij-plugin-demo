@@ -1,4 +1,4 @@
-package abyss.psi
+package abyss.treeUpdateManager.psi
 
 // TODO: Use ReadAction.compute(() -> {
 // TODO: Use coroutines

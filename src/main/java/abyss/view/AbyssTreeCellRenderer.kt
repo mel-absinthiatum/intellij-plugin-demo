@@ -17,10 +17,9 @@ class AbyssTreeCellRenderer(tree: JTree) : JBDefaultTreeCellRenderer(tree) {
         if (value is TemplateNode<*, *, *>) {
             return makeComponent(value.model.getLabelText(), value.model.getIcon())
         }
+        // TODO: add expanded
 //        when (value) {
-//            is RootNode -> { return this }
-//            is MppAuthorityZoneNode -> { return makeComponent("#authority zone", CustomIcons.Nodes.Root) }
-//            is PackageNode -> { return makeComponent(value.model.getLabelText, CustomIcons.Nodes.File) }
+//            is RootNode, is MppAuthorityZoneNode, is PackageNode -> { return makeComponent(value.model.getLabelText, CustomIcons.Nodes.File) }
 //            is SharedElementNode -> { return makeComponent(value.model.name ?: "#error", CustomIcons.Nodes.Annotation) }
 //            is ExpectOrActualNode -> { return makeComponent(value.model.type.toString(), CustomIcons.Nodes.Actual) }
 //        }
@@ -36,3 +35,14 @@ class AbyssTreeCellRenderer(tree: JTree) : JBDefaultTreeCellRenderer(tree) {
         return label
     }
 }
+/*
+* myTree.setCellRenderer(new NodeRenderer() {
+      @Override
+      public void customizeCellRenderer(@NotNull JTree tree,
+                                        Object value,
+                                        boolean selected,
+                                        boolean expanded,
+                                        boolean leaf,
+                                        int row,
+                                        boolean hasFocus) {
+        super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);*/
