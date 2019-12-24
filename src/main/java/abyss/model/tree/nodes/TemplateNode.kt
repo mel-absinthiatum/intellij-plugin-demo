@@ -15,7 +15,6 @@ interface CustomNodeInterface: TreeNode {
     fun nodeModel(): Any?
     fun childNodes(): List<CustomNodeInterface>
     fun nodeParent(): CustomNodeInterface?
-//    fun childNodes(): List<TreeNode>
 }
 
 interface TemplateNodeInterface<M: NodeModel, P: CustomNodeInterface, C: CustomNodeInterface>: CustomNodeInterface {
@@ -35,7 +34,7 @@ interface TemplateNodeInterface<M: NodeModel, P: CustomNodeInterface, C: CustomN
 abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeInterface>(
     override var model: M,
     override var nodeParent: P? = null,
-    private val children: MutableList<C> = mutableListOf()
+    val children: MutableList<C> = mutableListOf()
 ): TemplateNodeInterface<M, P, C>{
 
     override fun childNodes(): List<C> = children
@@ -75,6 +74,11 @@ abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeI
     }
 
     override fun getAllowsChildren(): Boolean = true
+
+    fun including(vararg nodes: C): TemplateNode<M, P, C> {
+        this.add(nodes.asList())
+        return this
+    }
 }
 
 abstract class TemplateLeaf<M: NodeModel, P: CustomNodeInterface>(model: M): TemplateNode<M, P, Nothing>(model) {
