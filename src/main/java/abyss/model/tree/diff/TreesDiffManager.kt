@@ -62,7 +62,7 @@ class TreesDiffManager {
 
     class NodesTuple(val oldNode: CustomNodeInterface, val newNode: CustomNodeInterface)
 
-    class DiffNodeModel<M : Any>(val model: M, val mutations: List<TreeMutation>)
+    class DiffNodeModel<M : Any>(val sourceNodeModel: M, val mutations: List<TreeMutation>)
 
 }
 

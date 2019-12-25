@@ -157,7 +157,7 @@ data class SharedElementModel(
     }
 }
 
-// TODO: notnull parent and model
+// TODO: notnull parent and sourceNodeModel
 class OldSharedElementNode(
     val model: SharedElementModelInterface,
     var sharedChildren: Array<ElementContainable>,
@@ -209,11 +209,11 @@ class OldSharedElementNode(
 
 //    }
 //    override fun children(): Enumeration<NodeInterface> {
-////    { return sharedChildren.mapNotNull { model ->
+////    { return sharedChildren.mapNotNull { sourceNodeModel ->
 ////        // TODO
-////        when (model) {
-////            is SharedElementModelInterface -> { OldSharedElementNode(model, this) }
-////            is ExpectOrActualModelInterface -> { OldExpectOrActualNode(model, this) }
+////        when (sourceNodeModel) {
+////            is SharedElementModelInterface -> { OldSharedElementNode(sourceNodeModel, this) }
+////            is ExpectOrActualModelInterface -> { OldExpectOrActualNode(sourceNodeModel, this) }
 ////        }
 ////        null
 //////        OldExpectOrActualNode(it, this)

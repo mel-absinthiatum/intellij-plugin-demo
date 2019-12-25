@@ -19,9 +19,9 @@ class AbyssTreeCellRenderer(tree: JTree) : JBDefaultTreeCellRenderer(tree) {
         }
         // TODO: add expanded
 //        when (value) {
-//            is RootNode, is MppAuthorityZoneNode, is PackageNode -> { return makeComponent(value.model.getLabelText, CustomIcons.Nodes.File) }
-//            is SharedElementNode -> { return makeComponent(value.model.name ?: "#error", CustomIcons.Nodes.Annotation) }
-//            is ExpectOrActualNode -> { return makeComponent(value.model.type.toString(), CustomIcons.Nodes.Actual) }
+//            is RootNode, is MppAuthorityZoneNode, is PackageNode -> { return makeComponent(value.sourceNodeModel.getLabelText, CustomIcons.Nodes.File) }
+//            is SharedElementNode -> { return makeComponent(value.sourceNodeModel.name ?: "#error", CustomIcons.Nodes.Annotation) }
+//            is ExpectOrActualNode -> { return makeComponent(value.sourceNodeModel.type.toString(), CustomIcons.Nodes.Actual) }
 //        }
 
         return this

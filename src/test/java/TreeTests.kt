@@ -37,7 +37,7 @@ class TreeTests {
 
         val rootModel = mutationsTree.userObject as? TreesDiffManager.DiffNodeModel<*>
 
-        assertNotNull(rootModel, "Root model must be non null")
+        assertNotNull(rootModel, "Root sourceNodeModel must be non null")
 
         val rootMutations = rootModel.mutations
 

@@ -94,14 +94,14 @@ class SharedTreeProvider {
 
             // DEBUG
 //            list.forEach { fileNode ->
-//                println("file node: ${fileNode.model.title}")
+//                println("file node: ${fileNode.sourceNodeModel.title}")
 //
 //                fileNode.children.forEach { node ->
-//                    println("__collected ${node.model.name}")
+//                    println("__collected ${node.sourceNodeModel.name}")
 //
 //                    node.children.forEach { child ->
 //                        when (child) {
-//                            is SharedItemNode -> println("____collected: ${child.model.name}")
+//                            is SharedItemNode -> println("____collected: ${child.sourceNodeModel.name}")
 //                            is ExpectOrActuaItemlNode -> println("_____expect or actual")
 //                        }
 //                    }
