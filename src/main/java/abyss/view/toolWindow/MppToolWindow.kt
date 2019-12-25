@@ -4,6 +4,7 @@ import abyss.extensionPoints.SharedElementsTopics
 import abyss.extensionPoints.SharedElementsTopicsNotifier
 import abyss.imageManager.CustomIcons
 import abyss.model.tree.diff.Insert
+import abyss.model.tree.diff.Remove
 import abyss.model.tree.diff.TreeMutation
 import abyss.model.tree.diff.TreesDiffManager
 import abyss.model.tree.nodes.CustomNodeInterface
@@ -70,20 +71,8 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
         val bus = project.messageBus
         bus.connect().subscribe(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC, object : SharedElementsTopicsNotifier {
             override fun sharedElementsUpdated(root: RootNode) {
-                // TODO: Cache sourceNodeModel and root pointers with their types
-                val diffTree = TreesDiffManager().makeMutationsTree(treeRoot, root)
-
-                // Go to children conforming the mutated children array
-                // if there are no children then return
-
-                // Remove all Removed Nodes
-                // Insert all Inserted Nodes
-
-                // return
-
-
-
-                treeModel.setRoot(root)
+                val diffTree = TreesDiffManager().makeMutationsTree(treeRoot, root) ?: return
+                updateTree(treeRoot, diffTree)
             }
         })
     }
@@ -109,18 +98,20 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
         }
 
         val mutations = diffNodeModel.mutations
-        mutations.forEach {  }
-
-
+        mutations.forEach { handleMutation(sourceNode, it) }
     }
 
     private fun handleMutation(node: CustomNodeInterface, mutation: TreeMutation) {
         val targetNode = node as? TemplateNodeInterface<*, *, *> ?: return
         when (mutation) {
             is Insert -> {
-//                targetNode.add(mutation.node)
+                targetNode.insert(mutation.node, targetNode.childCount)
+            }
+            is Remove -> {
+                targetNode.remove(mutation.node)
             }
         }
+        treeModel.reload(targetNode)
     }
 
     private fun configureSharedElementsTree() {

@@ -2,6 +2,7 @@ package abyss.model.tree.nodes
 
 import java.util.*
 import javax.swing.Icon
+import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 
 
@@ -10,14 +11,14 @@ interface NodeModel {
     fun getIcon(): Icon?
 }
 
-interface CustomNodeInterface: TreeNode {
+interface CustomNodeInterface : MutableTreeNode {
     fun removeNodeParent()
     fun nodeModel(): Any?
     fun childNodes(): List<CustomNodeInterface>
     fun nodeParent(): CustomNodeInterface?
 }
 
-interface TemplateNodeInterface<M: NodeModel, P: CustomNodeInterface, C: CustomNodeInterface>: CustomNodeInterface {
+interface TemplateNodeInterface<M : NodeModel, P : CustomNodeInterface, C : CustomNodeInterface> : CustomNodeInterface {
     var model: M
 
     var nodeParent: P?
@@ -31,11 +32,11 @@ interface TemplateNodeInterface<M: NodeModel, P: CustomNodeInterface, C: CustomN
     fun remove(nodes: List<C>)
 }
 
-abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeInterface>(
+abstract class TemplateNode<M : NodeModel, P : CustomNodeInterface, C : CustomNodeInterface>(
     override var model: M,
     override var nodeParent: P? = null,
     val children: MutableList<C> = mutableListOf()
-): TemplateNodeInterface<M, P, C>{
+) : TemplateNodeInterface<M, P, C> {
 
     override fun childNodes(): List<C> = children
 
@@ -43,18 +44,52 @@ abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeI
 
     override fun nodeParent() = nodeParent
 
-    override fun add(node: C) { children.add(node) }
+    override fun add(node: C) {
+        children.add(node)
+    }
 
-    override fun add(nodes: List<C>) { children.addAll(nodes)}
+    override fun add(nodes: List<C>) {
+        children.addAll(nodes)
+    }
 
     override fun remove(node: C) {
         node.removeNodeParent()
-        children.removeIf{it == node}
+        children.removeIf { it == node }
     }
 
     override fun remove(nodes: List<C>) {
         nodes.forEach { it.removeNodeParent() }
         children.removeAll(nodes)
+    }
+
+    override fun remove(index: Int) {
+        //TODO remove node parent if necessary
+        children.removeAt(index)
+    }
+
+    override fun remove(node: MutableTreeNode?) {
+        //TODO remove node parent if necessary
+        children.removeIf { it == node }
+    }
+
+    override fun insert(child: MutableTreeNode, index: Int) {
+        val newNode = child as? C ?: throw Exception("wrong type")
+        children.add(index, newNode)
+    }
+
+    override fun setParent(newParent: MutableTreeNode) {
+        val newParentNode = newParent as? P ?: throw Exception("wrong type")
+        nodeParent = newParentNode
+    }
+
+    override fun setUserObject(`object`: Any) {
+        val newModel = `object` as? M ?: throw Exception("wrong type")
+        model = newModel
+    }
+
+    override fun removeFromParent() {
+        nodeParent?.remove(this)
+        nodeParent = null
     }
 
     override fun children(): Enumeration<out TreeNode> = children.toEnumeration()
@@ -81,14 +116,20 @@ abstract class TemplateNode<M: NodeModel, P: CustomNodeInterface, C: CustomNodeI
     }
 }
 
-abstract class TemplateLeaf<M: NodeModel, P: CustomNodeInterface>(model: M): TemplateNode<M, P, Nothing>(model) {
+abstract class TemplateLeaf<M : NodeModel, P : CustomNodeInterface>(model: M) : TemplateNode<M, P, Nothing>(model) {
     override fun getAllowsChildren(): Boolean = false
 
-    override fun add(node: Nothing) { assert(false) { "Not allowed." } }
+    override fun add(node: Nothing) {
+        assert(false) { "Not allowed." }
+    }
 
-    override fun add(nodes: List<Nothing>) { assert(false) { "Not allowed." } }
+    override fun add(nodes: List<Nothing>) {
+        assert(false) { "Not allowed." }
+    }
 
-    override fun remove(node: Nothing) { assert(false) { "Not allowed." } }
+    override fun remove(node: Nothing) {
+        assert(false) { "Not allowed." }
+    }
 
     override fun children(): Enumeration<out TreeNode> = emptyEnumeration()
 
@@ -107,8 +148,9 @@ abstract class TemplateLeaf<M: NodeModel, P: CustomNodeInterface>(model: M): Tem
     }
 }
 
-abstract class TemplateRootNode<M: NodeModel, C: CustomNodeInterface>(model: M
-): TemplateNode<M, Nothing, C>(model) {
+abstract class TemplateRootNode<M : NodeModel, C : CustomNodeInterface>(
+    model: M
+) : TemplateNode<M, Nothing, C>(model) {
     override var nodeParent: Nothing? = null
 
     override fun getParent(): TreeNode? = null
@@ -117,28 +159,25 @@ abstract class TemplateRootNode<M: NodeModel, C: CustomNodeInterface>(model: M
 }
 
 
-interface SharedElementContent: CustomNodeInterface
+interface SharedElementContent : CustomNodeInterface
 
 
-
-class ExpectOrActualNode(model: ExpectOrActualModel)
-    : TemplateLeaf<ExpectOrActualModel, SharedElementNode>(model),
+class ExpectOrActualNode(model: ExpectOrActualModel) : TemplateLeaf<ExpectOrActualModel, SharedElementNode>(model),
     SharedElementContent
 
-class SharedElementNode(model: SharedElementModel)
-    : TemplateNode<SharedElementModel, CustomNodeInterface, SharedElementContent>(model),
+class SharedElementNode(model: SharedElementModel) :
+    TemplateNode<SharedElementModel, CustomNodeInterface, SharedElementContent>(model),
     SharedElementContent
 
-class PackageNode(model: PackageModel)
-    : TemplateNode<PackageModel, MppAuthorityZoneNode, SharedElementNode>(model)
+class PackageNode(model: PackageModel) : TemplateNode<PackageModel, MppAuthorityZoneNode, SharedElementNode>(model)
 
-class MppAuthorityZoneNode(model: MppAuthorityZoneModel)
-    : TemplateNode<MppAuthorityZoneModel, RootNode, PackageNode>(model)
+class MppAuthorityZoneNode(model: MppAuthorityZoneModel) :
+    TemplateNode<MppAuthorityZoneModel, RootNode, PackageNode>(model)
 
-class RootNode: TemplateRootNode<NodeModel, MppAuthorityZoneNode>(rootNodeModel)
+class RootNode : TemplateRootNode<NodeModel, MppAuthorityZoneNode>(rootNodeModel)
 
 
-object rootNodeModel: NodeModel {
+object rootNodeModel : NodeModel {
     override fun getLabelText(): String {
         return ""
     }

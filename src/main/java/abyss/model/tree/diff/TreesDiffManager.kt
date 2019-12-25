@@ -2,7 +2,7 @@ package abyss.model.tree.diff
 
 import abyss.model.tree.nodes.CustomNodeInterface
 import javax.swing.tree.DefaultMutableTreeNode
-import javax.swing.tree.TreeNode
+import javax.swing.tree.MutableTreeNode
 
 class TreesDiffManager {
 
@@ -69,6 +69,6 @@ class TreesDiffManager {
 
 sealed class TreeMutation
 
-data class Insert(val node: TreeNode, val parent: TreeNode) : TreeMutation()
-data class Remove(val node: TreeNode, val parent: TreeNode) : TreeMutation()
-data class Move(val node: TreeNode, val oldParent: TreeNode, val newParent: TreeNode) : TreeMutation()
+data class Insert(val node: MutableTreeNode, val parent: MutableTreeNode) : TreeMutation()
+data class Remove(val node: MutableTreeNode, val parent: MutableTreeNode) : TreeMutation()
+data class Move(val node: MutableTreeNode, val oldParent: MutableTreeNode, val newParent: MutableTreeNode) : TreeMutation()
