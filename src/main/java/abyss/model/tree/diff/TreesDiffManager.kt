@@ -6,6 +6,7 @@ import javax.swing.tree.TreeNode
 
 class TreesDiffManager {
 
+    // TODO lazy
     fun makeMutationsTree(oldNode: CustomNodeInterface, newNode: CustomNodeInterface): DefaultMutableTreeNode? {
         return makeMutationsNode(oldNode,newNode)
     }
