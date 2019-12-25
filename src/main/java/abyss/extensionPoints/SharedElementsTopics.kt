@@ -1,6 +1,6 @@
 package abyss.extensionPoints
 
-import abyss.model.tree.nodes.MppAuthorityZoneNode
+import abyss.model.tree.nodes.RootNode
 import com.intellij.util.messages.Topic
 import javax.naming.Context
 
@@ -15,7 +15,7 @@ class SharedElementsTopics {
 }
 
 interface SharedElementsTopicsNotifier {
-    fun sharedElementsUpdated(nodes: List<MppAuthorityZoneNode>)
+    fun sharedElementsUpdated(root: RootNode)
 }
 
 interface ExperimentalTopicsNotifier {

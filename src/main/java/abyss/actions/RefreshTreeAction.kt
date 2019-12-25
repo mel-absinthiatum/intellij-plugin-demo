@@ -13,6 +13,6 @@ class RefreshTreeAction : AnAction() {
         if (project == null) {
             return
         }
-        SharedElementsUpdatesManager().updateElements(project)
+        SharedElementsUpdatesManager().updateSharedTreeRoot(project)
     }
 }

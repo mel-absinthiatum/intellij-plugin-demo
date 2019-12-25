@@ -68,10 +68,12 @@ class SharedTreeProvider {
         }
     }
 
-    suspend fun sharedElements(project: Project): List<MppAuthorityZoneNode> = suspendCoroutine { cont ->
+    suspend fun sharedTreeRoot(project: Project): RootNode = suspendCoroutine { cont ->
         DumbServiceImpl.getInstance(project).smartInvokeLater {
             runBlocking {
-                cont.resume(iterateAllZones(project))
+                val rootNode = RootNode()
+                rootNode.add(iterateAllZones(project))
+                cont.resume(rootNode)
             }
         }
     }

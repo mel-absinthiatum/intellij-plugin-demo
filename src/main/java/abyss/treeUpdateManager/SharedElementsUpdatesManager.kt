@@ -9,7 +9,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 interface SharedElementsUpdatesManagerInterface {
-
+    // TODO: Use interface
 }
 
 
@@ -19,12 +19,22 @@ class SharedElementsUpdatesManager: SharedElementsUpdatesManagerInterface {
 
     fun launchUpdatesTimer(project: Project, interval: Long) {
         val timer: Job = startCoroutineTimer(delayMillis = 0, repeatMillis = interval) {
-            updateElements(project)
+            updateSharedTreeRoot(project)
             println("update all by timer")
         }
         timers[project] = timer
     }
 
+    fun updateSharedTreeRoot(project: Project) {
+        GlobalScope.launch {
+            val root = SharedTreeProvider().sharedTreeRoot(project)
+
+            val myBus = project.messageBus
+            val publisher: SharedElementsTopicsNotifier =
+                myBus.syncPublisher(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC)
+            publisher.sharedElementsUpdated(root)
+        }
+    }
 
     private fun startCoroutineTimer(delayMillis: Long = 0, repeatMillis: Long = 0, action: () -> Unit) = GlobalScope.launch {
         delay(delayMillis)
@@ -35,17 +45,6 @@ class SharedElementsUpdatesManager: SharedElementsUpdatesManagerInterface {
             }
         } else {
             action()
-        }
-    }
-
-    fun updateElements(project: Project) {
-        GlobalScope.launch {
-            val nodes = SharedTreeProvider().sharedElements(project)
-
-            val myBus = project.messageBus
-            val publisher: SharedElementsTopicsNotifier =
-                myBus.syncPublisher(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC)
-            publisher.sharedElementsUpdated(nodes)
         }
     }
 }

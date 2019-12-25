@@ -11,7 +11,7 @@ import javax.naming.Context
 class CustomStartupActivity : StartupActivity {
     override fun runActivity(project: Project) {
         println("Project ${project.name} started")
-        SharedElementsUpdatesManager().updateElements(project)
+        SharedElementsUpdatesManager().updateSharedTreeRoot(project)
     }
 }
 

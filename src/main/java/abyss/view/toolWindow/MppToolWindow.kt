@@ -4,7 +4,6 @@ import abyss.extensionPoints.SharedElementsTopics
 import abyss.extensionPoints.SharedElementsTopicsNotifier
 import abyss.imageManager.CustomIcons
 import abyss.model.tree.nodes.ExpectOrActualNode
-import abyss.model.tree.nodes.MppAuthorityZoneNode
 import abyss.model.tree.nodes.RootNode
 import abyss.view.AbyssTreeCellRenderer
 import com.intellij.codeInsight.highlighting.HighlightManager
@@ -59,13 +58,9 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
     private fun subscribe(bus: MessageBus) {
         val bus = project.messageBus
         bus.connect().subscribe(SharedElementsTopics.SHARED_ELEMENTS_TREE_TOPIC, object : SharedElementsTopicsNotifier {
-            override fun sharedElementsUpdated(nodes: List<MppAuthorityZoneNode>) {
+            override fun sharedElementsUpdated(root: RootNode) {
                 val treeModel = sharedElementsTree.model as DefaultTreeModel
-                val rootNode = treeModel.root as RootNode
-                rootNode.remove(rootNode.children)
-                rootNode.add(nodes)
-                treeModel.reload(rootNode)
-
+                treeModel.setRoot(root)
             }
         })
     }
