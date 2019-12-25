@@ -73,6 +73,9 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
             override fun sharedElementsUpdated(root: RootNode) {
                 val diffTree = TreesDiffManager().makeMutationsTree(treeRoot, root) ?: return
                 updateTree(treeRoot, diffTree)
+                for (i in 0 until sharedElementsTree.rowCount) {
+                    sharedElementsTree.expandRow(i)
+                }
             }
         })
     }

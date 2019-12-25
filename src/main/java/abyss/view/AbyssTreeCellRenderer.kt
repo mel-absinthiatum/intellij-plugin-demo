@@ -18,14 +18,11 @@ class AbyssTreeCellRenderer(tree: JTree) : JBDefaultTreeCellRenderer(tree) {
             return makeComponent(value.model.getLabelText(), value.model.getIcon())
         }
         // TODO: add expanded
-//        when (value) {
-//            is RootNode, is MppAuthorityZoneNode, is PackageNode -> { return makeComponent(value.sourceNodeModel.getLabelText, CustomIcons.Nodes.File) }
-//            is SharedElementNode -> { return makeComponent(value.sourceNodeModel.name ?: "#error", CustomIcons.Nodes.Annotation) }
-//            is ExpectOrActualNode -> { return makeComponent(value.sourceNodeModel.type.toString(), CustomIcons.Nodes.Actual) }
-//        }
+
 
         return this
     }
+
 
 
     private fun makeComponent(title: String, icon: Icon?): JBLabel {
@@ -35,14 +32,3 @@ class AbyssTreeCellRenderer(tree: JTree) : JBDefaultTreeCellRenderer(tree) {
         return label
     }
 }
-/*
-* myTree.setCellRenderer(new NodeRenderer() {
-      @Override
-      public void customizeCellRenderer(@NotNull JTree tree,
-                                        Object value,
-                                        boolean selected,
-                                        boolean expanded,
-                                        boolean leaf,
-                                        int row,
-                                        boolean hasFocus) {
-        super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);*/
