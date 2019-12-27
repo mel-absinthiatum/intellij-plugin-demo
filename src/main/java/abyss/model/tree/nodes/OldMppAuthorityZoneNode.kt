@@ -9,7 +9,7 @@ interface MppAuthorityZoneModelInterface {
     val title: String
 }
 
-class MppAuthorityZoneModel(override val title: String): MppAuthorityZoneModelInterface, NodeModel {
+data class MppAuthorityZoneModel(override val title: String): MppAuthorityZoneModelInterface, NodeModel {
     override fun getLabelText(): String = title
     override fun getIcon(): Icon? = CustomIcons.Nodes.Root
 }

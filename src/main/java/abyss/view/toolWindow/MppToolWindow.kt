@@ -11,6 +11,7 @@ import abyss.model.tree.nodes.CustomNodeInterface
 import abyss.model.tree.nodes.ExpectOrActualNode
 import abyss.model.tree.nodes.RootNode
 import abyss.model.tree.nodes.TemplateNodeInterface
+import abyss.treeUpdateManager.SharedElementsUpdatesManager
 import abyss.view.AbyssTreeCellRenderer
 import com.intellij.codeInsight.highlighting.HighlightManager
 import com.intellij.openapi.actionSystem.ActionManager
@@ -26,10 +27,12 @@ import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.messages.MessageBus
 import org.jetbrains.kotlin.psi.psiUtil.endOffset
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
+import java.util.*
 import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
 
@@ -53,7 +56,7 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
         configureSharedElementsTree()
 
         // TODO
-//        SharedElementsUpdatesManager().launchUpdatesTimer(project, 5000)
+        SharedElementsUpdatesManager().launchUpdatesTimer(project, 5000)
     }
 
     private fun decorator(tree: Tree): ToolbarDecorator {
@@ -73,9 +76,7 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
             override fun sharedElementsUpdated(root: RootNode) {
                 val diffTree = TreesDiffManager().makeMutationsTree(treeRoot, root) ?: return
                 updateTree(treeRoot, diffTree)
-                for (i in 0 until sharedElementsTree.rowCount) {
-                    sharedElementsTree.expandRow(i)
-                }
+                reloadTree()
             }
         })
     }
@@ -114,7 +115,6 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
                 targetNode.remove(mutation.node)
             }
         }
-        treeModel.reload(targetNode)
     }
 
     private fun configureSharedElementsTree() {
@@ -159,7 +159,59 @@ class MppToolWindow(private val project: Project, private val toolWindow: ToolWi
             }
         }
     }
+
+    fun reloadTree() {
+        val expanded = ArrayList<TreePath>()
+        for (i in 0 until sharedElementsTree.rowCount - 1) {
+            val currPath = sharedElementsTree.getPathForRow(i)
+            val nextPath = sharedElementsTree.getPathForRow(i + 1)
+            if (currPath.isDescendant(nextPath)) {
+                expanded.add(currPath)
+            }
+        }
+        treeModel.reload()
+        for (path in expanded) {
+            sharedElementsTree.expandPath(path)
+        }
+    }
 }
+
+/*
+//create a class which implements the MouseListener interface and
+//implement the following in your overridden mouseClicked method
+
+@Override
+public void mouseClicked(MouseEvent e) {
+
+    if (SwingUtilities.isRightMouseButton(e)) {
+
+        int row = tree.getClosestRowForLocation(e.getX(), e.getY());
+        tree.setSelectionRow(row);
+        popupMenu.show(e.getComponent(), e.getX(), e.getY());
+    }
+}
+
+
+ // If you are interested in detecting either double-click events or when a user clicks on a node, regardless of whether or not it was selected, we recommend you do the following:
+
+ final JTree tree = ...;
+
+ MouseListener ml = new MouseAdapter() {
+     public void mousePressed(MouseEvent e) {
+         int selRow = tree.getRowForLocation(e.getX(), e.getY());
+         TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
+         if(selRow != -1) {
+             if(e.getClickCount() == 1) {
+                 mySingleClick(selRow, selPath);
+             }
+             else if(e.getClickCount() == 2) {
+                 myDoubleClick(selRow, selPath);
+             }
+         }
+     }
+ };
+ tree.addMouseListener(ml);
+*/
 
 //com.intellij.codeInsight.highlighting.HighlightUsagesHandlerBase
 //HighlightManager#addOccurrenceHighlights(Editor, PsiElement[], TextAttributes, boolean, ArrayList]]>)

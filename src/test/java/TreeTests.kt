@@ -71,6 +71,12 @@ class TreeTests {
 
         assertNotNull(mutationsTree, "Mutations tree must be non null")
 
+        val rootNodeModel = (mutationsTree as DefaultMutableTreeNode).userObject as? TreesDiffManager.DiffNodeModel<*>
+
+        assertNotNull(rootNodeModel, "Model must be non null")
+
+        assertEquals(rootNodeModel.mutations.size, 0)
+
         assertEquals(mutationsTree.childCount, 1)
 
         val childNode = mutationsTree.firstChild
