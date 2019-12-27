@@ -7,7 +7,6 @@ import javax.swing.Icon
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 
-// TODO: unify initialization
 interface PackageContainable
 
 
